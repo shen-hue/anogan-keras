@@ -24,16 +24,6 @@ parser.add_argument('--label_idx', type=str, default=7)
 parser.add_argument('--mode', type=str, default='test', help='train, test')
 args = parser.parse_args()
 
-### 0. prepare data
-### 0.1 load mnist data
-# (X_train, y_train), (X_test, y_test) = mnist.load_data()
-# X_train = (X_train.astype(np.float32) - 127.5) / 127.5
-# X_test = (X_test.astype(np.float32) - 127.5) / 127.5
-#
-# X_train = X_train[:,:,:,None]
-# X_test = X_test[:,:,:,None]
-# X_train_l, X_train_w = X_train.shape[1], X_train.shape[2]
-# X_test_l, X_test_w = X_test.shape[1], X_test.shape[2]
 
 ### 0.2 load credit fraud data
 tmp = pd.read_csv("creditcard.csv", encoding='gbk', header=None)
@@ -42,19 +32,6 @@ y_train = tmp.iloc[1:10000, -1].values.astype(np.float)
 X_test = tmp.iloc[10000:, 1:-2].values.astype(np.float)
 y_test = tmp.iloc[10000:, -1].values.astype(np.float)
 
-# ### 0.3 load sine data
-# sequence = 28       # sequence length
-# dimension = 28      # dimension of each sequence
-# X_train = sine_data_generation(10000, sequence, dimension)
-# y_train = np.zeros((10000,))
-# n_test_n = 800      # number of normal data in test data set
-# n_test_a = 200      #number of anomaly data in test data set
-# X_test_n = sine_data_generation(n_test_n, sequence, dimension)
-# X_test_a = anomaly_sine_data_generation(200, sequence, dimension)
-# X_test = np.concatenate((X_test_n,X_test_a), axis=0)
-# y_test_n = np.zeros((n_test_n),)
-# y_test_a = np.ones((n_test_a),)
-# y_test = np.concatenate((y_test_n,y_test_a), axis=0)
 #
 # ### 0.3.1 show the training data and test data
 #
@@ -65,7 +42,6 @@ y_test = tmp.iloc[10000:, -1].values.astype(np.float)
 # plt.title('test data')
 # plt.savefig('result_sin/test_data')
 
-# X_test_original = X_test.copy()
 
 # X_train = X_train[y_train == 1]       # in mnist data number"1" as normal data
 # X_train = X_train[y_train == 0]         # in credit fraud data 0 as normal data
