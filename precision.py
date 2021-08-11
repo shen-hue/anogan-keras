@@ -9,19 +9,19 @@ matplotlib.use('PDF')
 from visualization import visualization, visualization_confusion_matrix
 
 # load test result
-score = np.load('result_credit_NN/credit_test_score.npy')
-qurey= np.load('result_credit_NN/credit_test_qurey.npy')
-pred = np.load('result_credit_NN/credit_test_pred.npy')
-diff = np.load('result_credit_NN/credit_test_diff.npy')
+score = np.load('result_credit_NN_Wasserstein/credit_test_score.npy')
+qurey= np.load('result_credit_NN_Wasserstein/credit_test_qurey.npy')
+pred = np.load('result_credit_NN_Wasserstein/credit_test_pred.npy')
+diff = np.load('result_credit_NN_Wasserstein/credit_test_diff.npy')
 
-threshold = 100
+threshold = 180
 
 # order prediction result(anomaly:1, normal:0)
 score = score.flatten()
 pred_y = np.zeros((score.shape[0]))
 pred_y[score > threshold] = 1            #anomaly 1, normal 0
-X_test = np.load('result_credit_NN/X_test.npy')
-y_test = np.load('result_credit_NN/y_test.npy')
+X_test = np.load('result_credit_NN_Wasserstein/X_test.npy')
+y_test = np.load('result_credit_NN_Wasserstein/y_test.npy')
 
 
 
@@ -51,35 +51,35 @@ sequence = X_test.shape[1]
 plt.figure(1)
 plt.plot(np.arange(sequence), X_test[false_positive_index[0][0]])
 plt.title('original data')
-plt.savefig('result_credit_NN/false_positive_original')
+plt.savefig('result_credit_NN_Wasserstein/false_positive_original')
 plt.figure(2)
 plt.plot(np.arange(sequence), pred[false_positive_index[0][0]])
 plt.title('generated data')
-plt.savefig('result_credit_NN/false_positive_generated')
+plt.savefig('result_credit_NN_Wasserstein/false_positive_generated')
 plt.figure(3)
 plt.plot(np.arange(sequence), X_test[false_negative_index[0][0]])
 plt.title('original data')
-plt.savefig('result_credit_NN/false_negative_original')
+plt.savefig('result_credit_NN_Wasserstein/false_negative_original')
 plt.figure(4)
 plt.plot(np.arange(sequence), pred[false_negative_index[0][0]])
 plt.title('generated data')
-plt.savefig('result_credit_NN/false_negative_generated')
+plt.savefig('result_credit_NN_Wasserstein/false_negative_generated')
 plt.figure(5)
 plt.plot(np.arange(sequence), X_test[true_positive_index[0][0]])
 plt.title('original data')
-plt.savefig('result_credit_NN/true_positive_original')
+plt.savefig('result_credit_NN_Wasserstein/true_positive_original')
 plt.figure(6)
 plt.plot(np.arange(sequence), pred[true_positive_index[0][0]])
 plt.title('generated data')
-plt.savefig('result_credit_NN/true_positive_generated')
+plt.savefig('result_credit_NN_Wasserstein/true_positive_generated')
 plt.figure(7)
 plt.plot(np.arange(sequence), X_test[true_negative_index[0][0]])
 plt.title('original data')
-plt.savefig('result_credit_NN/true_negative_original')
+plt.savefig('result_credit_NN_Wasserstein/true_negative_original')
 plt.figure(8)
 plt.plot(np.arange(sequence), pred[true_negative_index[0][0]])
 plt.title('generated data')
-plt.savefig('result_credit_NN/true_negative_generated')
+plt.savefig('result_credit_NN_Wasserstein/true_negative_generated')
 
 ### plot sin data
 # sequence = X_test.shape[1]

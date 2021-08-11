@@ -38,9 +38,9 @@ args = parser.parse_args()
 ### 0.2 load credit fraud data
 tmp = pd.read_csv("creditcard.csv", encoding='gbk', header=None)
 X_train = tmp.iloc[1:10000, 1:-2].values.astype(np.float)
-y_train = tmp.iloc[1:10000, -1].values.astype(np.float)
+y_train = tmp.iloc[1:10000, -1].values.astype(np.int64)
 X_test = tmp.iloc[10000:, 1:-2].values.astype(np.float)
-y_test = tmp.iloc[10000:, -1].values.astype(np.float)
+y_test = tmp.iloc[10000:, -1].values.astype(np.int64)
 
 # ### 0.3 load sine data
 # sequence = 28       # sequence length
@@ -77,7 +77,7 @@ y_test = tmp.iloc[10000:, -1].values.astype(np.float)
 # X_test = (X_test-np.min(X_test))/(np.max(X_test)-np.min(X_test))
 
 
-### 0.4 reshape the data(only for credit fraud)
+### 0.4 reshape the data(only for credit fraud with CNN)
 # X_train = np.repeat(X_train[:, np.newaxis], 28, axis=1)
 # X_test = np.repeat(X_test[:, np.newaxis], 28, axis=1)
 #
@@ -187,14 +187,14 @@ for i in m:
     # print ('%d label, %d : done'%(label_idx, img_idx), '%.2f'%score, '%.2fms'%time)
     print("number: ", i, "score:", score[i])
 
-np.save('result_credit_NN/credit_test_score', score)
-np.save('result_credit_NN/credit_test_qurey', qurey)
-np.save('result_credit_NN/credit_test_pred', pred)
-np.save('result_credit_NN/credit_test_diff', diff)
-np.save('result_credit_NN/X_test', X_test)
-np.save('result_credit_NN/y_test', y_test)
-np.save('result_credit_NN/X_train', X_train)
-np.save('result_credit_NN/y_train', y_train)
+np.save('result_credit_NN_Wasserstein/credit_test_score', score)
+np.save('result_credit_NN_Wasserstein/credit_test_qurey', qurey)
+np.save('result_credit_NN_Wasserstein/credit_test_pred', pred)
+np.save('result_credit_NN_Wasserstein/credit_test_diff', diff)
+np.save('result_credit_NN_Wasserstein/X_test', X_test)
+np.save('result_credit_NN_Wasserstein/y_test', y_test)
+np.save('result_credit_NN_Wasserstein/X_train', X_train)
+np.save('result_credit_NN_Wasserstein/y_train', y_train)
 
 # cv2.imwrite('./qurey.png', qurey)
 # cv2.imwrite('./pred.png', pred)
@@ -203,7 +203,7 @@ np.save('result_credit_NN/y_train', y_train)
 ###### histogram
 
 plt.hist(score, 40)
-plt.savefig('result_credit_NN/histogram')
+plt.savefig('result_credit_NN_Wasserstein/histogram')
 #
 # ## matplot view
 # plt.figure(1, figsize=(3, 3))
