@@ -44,7 +44,7 @@ y_test = tmp.iloc[10000:, -1].values.astype(np.float)
 
 
 # X_train = X_train[y_train == 1]       # in mnist data number"1" as normal data
-# X_train = X_train[y_train == 0]         # in credit fraud data 0 as normal data
+X_train = X_train[y_train == 0]         # in credit fraud data 0 as normal data
 
 ### 0.3 normalize the data(not use)
 # plt.hist(X_train, 40)
@@ -53,19 +53,18 @@ y_test = tmp.iloc[10000:, -1].values.astype(np.float)
 # X_test = (X_test-np.min(X_test))/(np.max(X_test)-np.min(X_test))
 
 
-### 0.4 reshape the data(only for credit fraud)
-# X_train = np.repeat(X_train[:, np.newaxis], 28, axis=1)
-# X_test = np.repeat(X_test[:, np.newaxis], 28, axis=1)
+## 0.4 reshape the data(only for credit fraud)
+X_train = np.repeat(X_train[:, np.newaxis], 28, axis=1)
+X_test = np.repeat(X_test[:, np.newaxis], 28, axis=1)
 #
-# X_train = X_train[:, :, :, None]
-# X_test = X_test[:, :, :, None]
+X_train = X_train[:, :, :, None]
+X_test = X_test[:, :, :, None]
 #
-# X_train_l, X_train_w = X_train.shape[1], X_train.shape[2]
-# X_test_l, X_test_w = X_train.shape[1], X_test.shape[2]
+### 0.4 lenth of the data(CNN model)
+X_train_l, X_train_w = X_train.shape[1], X_train.shape[2]
+X_test_l, X_test_w = X_train.shape[1], X_test.shape[2]
 
-### 0.4 lenth of the data(for simple model credit fraud)
-X_train_l = X_train.shape[1]
-X_test_l = X_train.shape[1]
+
 
 print('train shape:', X_train.shape)
 
@@ -100,14 +99,11 @@ generated_img = anogan.generate(25)
 
 def anomaly_detection(test_img, g=None, d=None):
     model = anogan.anomaly_detector(g=g, d=d)
-    # ano_score, similar_img = anogan.compute_anomaly_score(model, test_img.reshape(1, 28, 28, 1), iterations=500, d=d)
-    ### only for simple model credit fraud
-    ano_score, similar_img = anogan.compute_anomaly_score(model, test_img.reshape(1, 28), iterations=500, d=d)
+    ano_score, similar_img = anogan.compute_anomaly_score(model, test_img.reshape(1, 28, 28, 1), iterations=500, d=d)
+
 
     # anomaly area, 255 normalization
-    # np_residual = test_img.reshape(28, 28, 1) - similar_img.reshape(28, 28, 1)
-    ### only for simple model credit fraud
-    np_residual = test_img.reshape(28,1) - similar_img.reshape(28,1)
+    np_residual = test_img.reshape(28, 28, 1) - similar_img.reshape(28, 28, 1)
 
     # np_residual = (np_residual + 2)/4
 
@@ -121,7 +117,7 @@ def anomaly_detection(test_img, g=None, d=None):
     # residual_color = cv2.applyColorMap(np_residual.astype(np.uint8), cv2.COLORMAP_JET)      #热力图
     # show = cv2.addWeighted(original_x_color, 0.3, residual_color, 0.7, 0.)      #融合图像
 
-    return ano_score, test_img.reshape(28,1), similar_img.reshape(28,1), np_residual
+    return ano_score, test_img.reshape(28,28,1), similar_img.reshape(28,28,1), np_residual
 
 
 ### compute anomaly score - sample from test set
@@ -147,10 +143,9 @@ y_test = np.concatenate((y_test1, y_test2), axis=0)
 n_test = X_test.shape[0]
 m = range(n_test)  # X_test.shape[0]
 score = np.zeros((n_test, 1))
-# qurey = np.zeros((n_test, X_test_l, X_test_w, 1))
-qurey = np.zeros((n_test, X_test_l, 1))
-pred = np.zeros((n_test, X_test_l, 1))
-diff = np.zeros((n_test, X_test_l, 1))
+qurey = np.zeros((n_test, X_test_l, X_test_w, 1))
+pred = np.zeros((n_test, X_test_l, X_test_w, 1))
+diff = np.zeros((n_test, X_test_l, X_test_w, 1))
 for i in m:
     # img_idx = args.img_idx
     # label_idx = args.label_idx
