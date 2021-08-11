@@ -21,40 +21,24 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 parser = argparse.ArgumentParser()
 parser.add_argument('--img_idx', type=int, default=14)
 parser.add_argument('--label_idx', type=str, default=7)
-parser.add_argument('--mode', type=str, default='test', help='train, test')
+parser.add_argument('--mode', type=str, default='train', help='train, test')
 args = parser.parse_args()
 
 ### 0. prepare data
-### 0.1 load mnist data
-# (X_train, y_train), (X_test, y_test) = mnist.load_data()
-# X_train = (X_train.astype(np.float32) - 127.5) / 127.5
-# X_test = (X_test.astype(np.float32) - 127.5) / 127.5
-#
-# X_train = X_train[:,:,:,None]
-# X_test = X_test[:,:,:,None]
-# X_train_l, X_train_w = X_train.shape[1], X_train.shape[2]
-# X_test_l, X_test_w = X_test.shape[1], X_test.shape[2]
 
-### 0.2 load credit fraud data
-tmp = pd.read_csv("creditcard.csv", encoding='gbk', header=None)
-X_train = tmp.iloc[1:10000, 1:-2].values.astype(np.float)
-y_train = tmp.iloc[1:10000, -1].values.astype(np.float)
-X_test = tmp.iloc[10000:, 1:-2].values.astype(np.float)
-y_test = tmp.iloc[10000:, -1].values.astype(np.float)
-
-# ### 0.3 load sine data
-# sequence = 28       # sequence length
-# dimension = 28      # dimension of each sequence
-# X_train = sine_data_generation(10000, sequence, dimension)
-# y_train = np.zeros((10000,))
-# n_test_n = 800      # number of normal data in test data set
-# n_test_a = 200      #number of anomaly data in test data set
-# X_test_n = sine_data_generation(n_test_n, sequence, dimension)
-# X_test_a = anomaly_sine_data_generation(200, sequence, dimension)
-# X_test = np.concatenate((X_test_n,X_test_a), axis=0)
-# y_test_n = np.zeros((n_test_n),)
-# y_test_a = np.ones((n_test_a),)
-# y_test = np.concatenate((y_test_n,y_test_a), axis=0)
+### 0.3 load sine data
+sequence = 28       # sequence length
+dimension = 28      # dimension of each sequence
+X_train = sine_data_generation(10000, sequence, dimension)
+y_train = np.zeros((10000,))
+n_test_n = 800      # number of normal data in test data set
+n_test_a = 200      #number of anomaly data in test data set
+X_test_n = sine_data_generation(n_test_n, sequence, dimension)
+X_test_a = anomaly_sine_data_generation(200, sequence, dimension)
+X_test = np.concatenate((X_test_n,X_test_a), axis=0)
+y_test_n = np.zeros((n_test_n),)
+y_test_a = np.ones((n_test_a),)
+y_test = np.concatenate((y_test_n,y_test_a), axis=0)
 #
 # ### 0.3.1 show the training data and test data
 #
@@ -67,8 +51,6 @@ y_test = tmp.iloc[10000:, -1].values.astype(np.float)
 
 # X_test_original = X_test.copy()
 
-# X_train = X_train[y_train == 1]       # in mnist data number"1" as normal data
-# X_train = X_train[y_train == 0]         # in credit fraud data 0 as normal data
 
 ### 0.3 normalize the data(not use)
 # plt.hist(X_train, 40)
@@ -77,19 +59,11 @@ y_test = tmp.iloc[10000:, -1].values.astype(np.float)
 # X_test = (X_test-np.min(X_test))/(np.max(X_test)-np.min(X_test))
 
 
-### 0.4 reshape the data(only for credit fraud)
-# X_train = np.repeat(X_train[:, np.newaxis], 28, axis=1)
-# X_test = np.repeat(X_test[:, np.newaxis], 28, axis=1)
-#
-# X_train = X_train[:, :, :, None]
-# X_test = X_test[:, :, :, None]
-#
-# X_train_l, X_train_w = X_train.shape[1], X_train.shape[2]
-# X_test_l, X_test_w = X_train.shape[1], X_test.shape[2]
+X_train = X_train[:, :, :, None]
+X_test = X_test[:, :, :, None]
 
-### 0.4 lenth of the data(for simple model credit fraud)
-X_train_l = X_train.shape[1]
-X_test_l = X_train.shape[1]
+X_train_l, X_train_w = X_train.shape[1], X_train.shape[2]
+X_test_l, X_test_w = X_train.shape[1], X_test.shape[2]
 
 print('train shape:', X_train.shape)
 
@@ -124,14 +98,11 @@ generated_img = anogan.generate(25)
 
 def anomaly_detection(test_img, g=None, d=None):
     model = anogan.anomaly_detector(g=g, d=d)
-    # ano_score, similar_img = anogan.compute_anomaly_score(model, test_img.reshape(1, 28, 28, 1), iterations=500, d=d)
-    ### only for simple model credit fraud
-    ano_score, similar_img = anogan.compute_anomaly_score(model, test_img.reshape(1, 28), iterations=500, d=d)
+    ano_score, similar_img = anogan.compute_anomaly_score(model, test_img.reshape(1, 28, 28, 1), iterations=500, d=d)
+
 
     # anomaly area, 255 normalization
-    # np_residual = test_img.reshape(28, 28, 1) - similar_img.reshape(28, 28, 1)
-    ### only for simple model credit fraud
-    np_residual = test_img.reshape(28,1) - similar_img.reshape(28,1)
+    np_residual = test_img.reshape(28, 28, 1) - similar_img.reshape(28, 28, 1)
 
     # np_residual = (np_residual + 2)/4
 
@@ -145,36 +116,20 @@ def anomaly_detection(test_img, g=None, d=None):
     # residual_color = cv2.applyColorMap(np_residual.astype(np.uint8), cv2.COLORMAP_JET)      #热力图
     # show = cv2.addWeighted(original_x_color, 0.3, residual_color, 0.7, 0.)      #融合图像
 
-    return ano_score, test_img.reshape(28,1), similar_img.reshape(28,1), np_residual
+    return ano_score, test_img.reshape(28,28,1), similar_img.reshape(28,28,1), np_residual
 
 
-### compute anomaly score - sample from test set
-# test_img = X_test_original[y_test==1][30]
+
 
 ### compute anomaly score - sample from strange image
-# test_img = X_test_original[y_test==0][30]
-
-### compute anomaly score - sample from strange image
-########### change!!!
-### select the test data(only for credit fraud)
-X_test1 = X_test[y_test == 0]
-X_test1 = X_test1[:800]
-y_test1 = y_test[y_test == 0]
-y_test1 = y_test1[:800]
-X_test2 = X_test[y_test == 1]
-X_test2 = X_test2[:200]
-y_test2 = y_test[y_test == 1]
-y_test2 = y_test2[:200]
-X_test = np.concatenate((X_test1, X_test2), axis=0)
-y_test = np.concatenate((y_test1, y_test2), axis=0)
 
 n_test = X_test.shape[0]
 m = range(n_test)  # X_test.shape[0]
 score = np.zeros((n_test, 1))
 # qurey = np.zeros((n_test, X_test_l, X_test_w, 1))
-qurey = np.zeros((n_test, X_test_l, 1))
-pred = np.zeros((n_test, X_test_l, 1))
-diff = np.zeros((n_test, X_test_l, 1))
+qurey = np.zeros((n_test, X_test_l,X_test_w, 1))
+pred = np.zeros((n_test, X_test_l,X_test_w, 1))
+diff = np.zeros((n_test, X_test_l,X_test_w, 1))
 for i in m:
     # img_idx = args.img_idx
     # label_idx = args.label_idx
@@ -187,14 +142,14 @@ for i in m:
     # print ('%d label, %d : done'%(label_idx, img_idx), '%.2f'%score, '%.2fms'%time)
     print("number: ", i, "score:", score[i])
 
-np.save('result_credit_NN/credit_test_score', score)
-np.save('result_credit_NN/credit_test_qurey', qurey)
-np.save('result_credit_NN/credit_test_pred', pred)
-np.save('result_credit_NN/credit_test_diff', diff)
-np.save('result_credit_NN/X_test', X_test)
-np.save('result_credit_NN/y_test', y_test)
-np.save('result_credit_NN/X_train', X_train)
-np.save('result_credit_NN/y_train', y_train)
+np.save('result_sin/sin_test_score', score)
+np.save('result_sin/sin_test_qurey', qurey)
+np.save('result_sin/sin_test_pred', pred)
+np.save('result_sin/sin_test_diff', diff)
+np.save('result_sin/X_test', X_test)
+np.save('result_sin/y_test', y_test)
+np.save('result_sin/X_train', X_train)
+np.save('result_sin/y_train', y_train)
 
 # cv2.imwrite('./qurey.png', qurey)
 # cv2.imwrite('./pred.png', pred)
@@ -203,7 +158,7 @@ np.save('result_credit_NN/y_train', y_train)
 ###### histogram
 
 plt.hist(score, 40)
-plt.savefig('result_credit_NN/histogram')
+plt.savefig('result_sin/histogram')
 #
 # ## matplot view
 # plt.figure(1, figsize=(3, 3))
