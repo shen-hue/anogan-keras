@@ -14,14 +14,16 @@ import anogan
 import keras
 import pandas as pd
 from load_data import sine_data_generation, anomaly_sine_data_generation
-from sklearn import preprocessing
+from sklearn import datasets
+
+iris = datasets.load_iris()
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--img_idx', type=int, default=14)
 parser.add_argument('--label_idx', type=str, default=7)
-parser.add_argument('--mode', type=str, default='test', help='train, test')
+parser.add_argument('--mode', type=str, default='train', help='train, test')
 args = parser.parse_args()
 
 ### 0. prepare data

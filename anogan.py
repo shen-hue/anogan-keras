@@ -55,11 +55,11 @@ def gradient_penalty_loss(y_true, y_pred, averaged_samples, gradient_penalty_wei
     gradient_penalty = gradient_penalty_weight * K.square(1 - gradient_l2_norm)
     return K.mean(gradient_penalty)
 
-### simple NNmodel(WGAN-GP)
-class RandomWeightedAverage(_Merge):
-    def _merge_function(self, inputs,BATCH_SIZE):
-        weights = K.random_uniform((BATCH_SIZE, 1, 1, 1))
-        return (weights * inputs[0]) + ((1 - weights) * inputs[1])
+# ### simple NNmodel(WGAN-GP)
+# class RandomWeightedAverage(_Merge):
+#     def _merge_function(self, inputs,BATCH_SIZE):
+#         weights = K.random_uniform((BATCH_SIZE, 1, 1, 1))
+#         return (weights * inputs[0]) + ((1 - weights) * inputs[1])
 
 
 ### generator model define
