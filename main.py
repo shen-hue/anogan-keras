@@ -21,7 +21,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 parser = argparse.ArgumentParser()
 parser.add_argument('--img_idx', type=int, default=14)
 parser.add_argument('--label_idx', type=str, default=7)
-parser.add_argument('--mode', type=str, default='test', help='train, test')
+parser.add_argument('--mode', type=str, default='train', help='train, test')
 args = parser.parse_args()
 
 
@@ -158,14 +158,14 @@ for i in m:
     # print ('%d label, %d : done'%(label_idx, img_idx), '%.2f'%score, '%.2fms'%time)
     print("number: ", i, "score:", score[i])
 
-np.save('result_credit_NN/credit_test_score', score)
-np.save('result_credit_NN/credit_test_qurey', qurey)
-np.save('result_credit_NN/credit_test_pred', pred)
-np.save('result_credit_NN/credit_test_diff', diff)
-np.save('result_credit_NN/X_test', X_test)
-np.save('result_credit_NN/y_test', y_test)
-np.save('result_credit_NN/X_train', X_train)
-np.save('result_credit_NN/y_train', y_train)
+np.save('result_credit_CNN/credit_test_score', score)
+np.save('result_credit_CNN/credit_test_qurey', qurey)
+np.save('result_credit_CNN/credit_test_pred', pred)
+np.save('result_credit_CNN/credit_test_diff', diff)
+np.save('result_credit_CNN/X_test', X_test)
+np.save('result_credit_CNN/y_test', y_test)
+np.save('result_credit_CNN/X_train', X_train)
+np.save('result_credit_CNN/y_train', y_train)
 
 # cv2.imwrite('./qurey.png', qurey)
 # cv2.imwrite('./pred.png', pred)
