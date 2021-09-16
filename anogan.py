@@ -3,8 +3,8 @@ from keras.models import Sequential, Model
 from keras.layers import Input, Reshape, Dense, Dropout, MaxPooling2D, Conv2D, Flatten
 from keras.layers import Conv2DTranspose, LeakyReLU
 from keras.layers.core import Activation
-from keras.layers.normalization import BatchNormalization
-from keras.optimizers import Adam, RMSprop
+from keras.layers import BatchNormalization
+from tensorflow.keras.optimizers import Adam,RMSprop
 from keras import backend as K
 from keras.utils.vis_utils import plot_model
 from keras import initializers
@@ -64,19 +64,6 @@ def gradient_penalty_loss(y_true, y_pred, averaged_samples, gradient_penalty_wei
 
 ### generator model define
 def generator_model():
-    ### CNN model
-    # inputs = Input((10,))
-    # fc1 = Dense(input_dim=10, units=128*7*7)(inputs)
-    # fc1 = BatchNormalization()(fc1)
-    # fc1 = LeakyReLU(0.2)(fc1)
-    # fc2 = Reshape((7, 7, 128), input_shape=(128*7*7,))(fc1)
-    # up1 = Conv2DTranspose(64, (2, 2), strides=(2, 2), padding='same')(fc2)
-    # conv1 = Conv2D(64, (3, 3), padding='same')(up1)
-    # conv1 = BatchNormalization()(conv1)
-    # conv1 = Activation('relu')(conv1)
-    # up2 = Conv2DTranspose(64, (2, 2), strides=(2, 2), padding='same')(conv1)
-    # conv2 = Conv2D(1, (5, 5), padding='same')(up2)
-    # outputs = Activation('tanh')(conv2)
     ### simple NN model
     inputs = Input((10,))
     fc1 = Dense(256, input_dim=10)(inputs)
@@ -88,7 +75,7 @@ def generator_model():
     fc3 = Dense(1024)(fc2)
     fc3 = LeakyReLU(0.2)(fc3)
     fc3 = BatchNormalization(momentum=0.8)(fc3)
-    fc4 = Dense(28)(fc3)
+    fc4 = Dense(13)(fc3)
     outputs = Activation('tanh')(fc4)
     # outputs = Reshape(X_train.shape[1])(fc4)
     
@@ -97,21 +84,10 @@ def generator_model():
 
 ### discriminator model define
 def discriminator_model():
-    ### CNN model
-    # inputs = Input((28, 28, 1))
-    # conv1 = Conv2D(64, (5, 5), padding='same')(inputs)
-    # conv1 = LeakyReLU(0.2)(conv1)
-    # pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
-    # conv2 = Conv2D(128, (5, 5), padding='same')(pool1)
-    # conv2 = LeakyReLU(0.2)(conv2)
-    # pool2 = MaxPooling2D(pool_size=(2, 2))(conv2)
-    # fc1 = Flatten()(pool2)
-    # fc1 = Dense(1)(fc1)
-    # outputs = Activation('sigmoid')(fc1)
     ### simple NN model
-    inputs = Input((28,))
+    inputs = Input((13,))
     # fc1 = Flatten(input_shape=X_train.shape[1])(inputs)
-    fc1 = Dense(512, input_dim=28)(inputs)
+    fc1 = Dense(512, input_dim=13)(inputs)
     fc1 = LeakyReLU(0.2)(fc1)
     fc2 = Dense(256)(fc1)
     fc2 = LeakyReLU(0.2)(fc2)
@@ -229,15 +205,18 @@ def anomaly_detector(g=None, d=None):
     g = Model(inputs=g.layers[1].input, outputs=g.layers[-1].output)
     g.trainable = False
     # Input layer cann't be trained. Add new layer as same size & same distribution
-    aInput = Input(shape=(10,))
-    gInput = Dense((10), trainable=True)(aInput)
-    gInput = Activation('sigmoid')(gInput)
+    aInput = Input(shape=(13,))
+    fc1 = Dense(512, input_dim=13)(aInput)
+    fc2 = LeakyReLU(0.2)(fc1)
+    fc3 = Dense(256)(fc2)
+    fc4 = LeakyReLU(0.2)(fc3)
+    gInput = Dense(10)(fc4)
     
     # G & D feature
     G_out = g(gInput)
-    D_out= intermidiate_model(G_out)    
-    model = Model(inputs=aInput, outputs=[G_out, D_out])
-    model.compile(loss=sum_of_residual, loss_weights= [0.90, 0.10], optimizer='rmsprop')
+    # D_out= intermidiate_model(G_out)
+    model = Model(inputs=aInput, outputs=G_out)
+    model.compile(optimizer='rmsprop',loss='mse')
     
     # batchnorm learning phase fixed (test) : make non trainable
     K.set_learning_phase(0)
