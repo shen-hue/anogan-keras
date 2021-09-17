@@ -24,7 +24,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 parser = argparse.ArgumentParser()
 parser.add_argument('--img_idx', type=int, default=14)
 parser.add_argument('--label_idx', type=str, default=7)
-parser.add_argument('--mode', type=str, default='test', help='train, test')
+parser.add_argument('--mode', type=str, default='train', help='train, test')
 args = parser.parse_args()
 
 ### 0. prepare data
@@ -76,17 +76,15 @@ generated_img = anogan.generate(25)
 
 def anomaly_detection(test_img, g=None, d=None):
     model = anogan.anomaly_detector(g=g, d=d)
+    model.load_weights('weights/encode.h5')
     # ano_score, similar_img = anogan.compute_anomaly_score(model, test_img.reshape(1, 28, 28, 1), iterations=500, d=d)
     ### only for simple model credit fraud
-    ano_score = model.fit(test_img.reshape(1,13),test_img.reshape(1,13),epochs=500,batch_size=1)
-    ano_score = ano_score.history['loss'][-1]
-    model.save_weights('weights/test_11.h5',True)
-    model.load_weights('weights/test_11.h5')
     similar_img = model.predict(test_img.reshape(1,13))
 
 
     ### only for simple model credit fraud
     np_residual = test_img.reshape(13,1) - similar_img.reshape(13,1)
+    ano_score = np.mean(np_residual)
 
     # np_residual = (np_residual + 2)/4
 
@@ -105,7 +103,14 @@ score = np.zeros((n_test, 1))
 qurey = np.zeros((n_test, X_test_l, 1))
 pred = np.zeros((n_test, X_test_l, 1))
 diff = np.zeros((n_test, X_test_l, 1))
-for i in [11]:
+
+# train the encode on test data
+model = anogan.anomaly_detector(g=None, d=None)
+ano_score = model.fit(X_test,X_test,epochs=500,batch_size=1)
+model.save_weights('weights/encode.h5', True)
+
+
+for i in m:
     # img_idx = args.img_idx
     # label_idx = args.label_idx
     test_img = X_test[i]
@@ -117,11 +122,11 @@ for i in [11]:
     # print ('%d label, %d : done'%(label_idx, img_idx), '%.2f'%score, '%.2fms'%time)
     # print("number: ", i, "score:", score[i])
 
-# np.save('result_wine_NN/wine_test_qurey', qurey)
-# np.save('result_wine_NN/wine_test_pred', pred)
-# np.save('result_wine_NN/wine_test_diff', diff)
-# np.save('result_wine_NN/wine_test_score', score)
-# np.save('result_wine_NN/X_test', X_test)
-# np.save('result_wine_NN/y_test', y_test)
-# np.save('result_wine_NN/X_train', X_train)
-# np.save('result_wine_NN/y_train', y_train)
+np.save('result_f_wine_NN/wine_test_qurey', qurey)
+np.save('result_f_wine_NN/wine_test_pred', pred)
+np.save('result_f_wine_NN/wine_test_diff', diff)
+np.save('result_f_wine_NN/wine_test_score', score)
+np.save('result_f_wine_NN/X_test', X_test)
+np.save('result_f_wine_NN/y_test', y_test)
+np.save('result_f_wine_NN/X_train', X_train)
+np.save('result_f_wine_NN/y_train', y_train)
