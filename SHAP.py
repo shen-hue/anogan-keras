@@ -21,13 +21,13 @@ def sort_by_absolute(df, index):
 top_5_features = sort_by_absolute(df, idx).iloc[:5,:]
 data_summary = shap.kmeans(test, 10)
 data = np.asarray(test)
-data = data[11].reshape(1,13)
+data = data[20].reshape(1,13)
 
 shaptop5features = pd.DataFrame(data=None)
 for i in top_5_features.index:
     # load weights into new model
     loaded_model = anogan.anomaly_detector()
-    loaded_model.load_weights('weights/test_11.h5')
+    loaded_model.load_weights('weights/test_20.h5')
     weights = loaded_model.get_weights()
 
     ## make sure the weight for the specific one input feature is set to 0

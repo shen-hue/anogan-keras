@@ -14,7 +14,7 @@ qurey= np.load('result_wine_NN/wine_test_qurey.npy')
 pred = np.load('result_wine_NN/wine_test_pred.npy')
 diff = np.load('result_wine_NN/wine_test_diff.npy')
 
-threshold = 100000
+threshold = 0.04
 
 # order prediction result(anomaly:1, normal:0)
 score = score.flatten()

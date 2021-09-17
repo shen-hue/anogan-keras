@@ -51,8 +51,8 @@ X_test_l = X_train.shape[1]
 ### 0.3 normalize the data(not use)
 # plt.hist(X_train, 40)
 # plt.savefig('X_train')
-X_train = (X_train-np.min(X_train))/(np.max(X_train)-np.min(X_train))
-X_test = (X_test-np.min(X_test))/(np.max(X_test)-np.min(X_test))
+X_train = (X_train-X_train.min(axis=0))/(X_train.max(axis=0)-X_train.min(axis=0))
+X_test = (X_test-X_test.min(axis=0))/(X_test.max(axis=0)-X_test.min(axis=0))
 
 
 
@@ -80,8 +80,8 @@ def anomaly_detection(test_img, g=None, d=None):
     ### only for simple model credit fraud
     ano_score = model.fit(test_img.reshape(1,13),test_img.reshape(1,13),epochs=500,batch_size=1)
     ano_score = ano_score.history['loss'][-1]
-    model.save_weights('weights/test_11.h5',True)
-    model.load_weights('weights/test_11.h5')
+    model.save_weights('weights/test_19.h5',True)
+    model.load_weights('weights/test_19.h5')
     similar_img = model.predict(test_img.reshape(1,13))
 
 
@@ -105,7 +105,7 @@ score = np.zeros((n_test, 1))
 qurey = np.zeros((n_test, X_test_l, 1))
 pred = np.zeros((n_test, X_test_l, 1))
 diff = np.zeros((n_test, X_test_l, 1))
-for i in [11]:
+for i in [19]:
     # img_idx = args.img_idx
     # label_idx = args.label_idx
     test_img = X_test[i]
