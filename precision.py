@@ -9,19 +9,19 @@ matplotlib.use('PDF')
 from visualization import visualization, visualization_confusion_matrix
 
 # load test result
-score = np.load('result_credit_NN/credit_test_score.npy')
-qurey= np.load('result_credit_NN/credit_test_qurey.npy')
-pred = np.load('result_credit_NN/credit_test_pred.npy')
-diff = np.load('result_credit_NN/credit_test_diff.npy')
+score = np.load('result_wine_NN/wine_test_score.npy')
+qurey= np.load('result_wine_NN/wine_test_qurey.npy')
+pred = np.load('result_wine_NN/wine_test_pred.npy')
+diff = np.load('result_wine_NN/wine_test_diff.npy')
 
-threshold = 100
+threshold = 100000
 
 # order prediction result(anomaly:1, normal:0)
 score = score.flatten()
 pred_y = np.zeros((score.shape[0]))
 pred_y[score > threshold] = 1            #anomaly 1, normal 0
-X_test = np.load('result_credit_NN/X_test.npy')
-y_test = np.load('result_credit_NN/y_test.npy')
+X_test = np.load('result_wine_NN/X_test.npy')
+y_test = np.load('result_wine_NN/y_test.npy').reshape(21)
 
 
 
@@ -46,67 +46,32 @@ false_positive_index = np.where((pred_y == 1) & (y_test == 0))
 false_negative_index = np.where((pred_y ==0) & (y_test == 1))
 true_positive_index = np.where((pred_y == 1) & (y_test == 1))
 true_negative_index = np.where((pred_y ==0) & (y_test == 0))
-### plot credit data
+## plot sin data
 sequence = X_test.shape[1]
 plt.figure(1)
-plt.plot(np.arange(sequence), X_test[false_positive_index[0][0]])
+[plt.plot(np.arange(sequence), X_test[false_positive_index[0][5]][:,s].reshape(sequence)) for s in range(sequence)]
 plt.title('original data')
-plt.savefig('result_credit_NN/false_positive_original')
+plt.savefig('result_sin/false_positive_original')
 plt.figure(2)
-plt.plot(np.arange(sequence), pred[false_positive_index[0][0]])
+[plt.plot(np.arange(sequence), pred[false_positive_index[0][5]][:,s].reshape(sequence)) for s in range(sequence)]
 plt.title('generated data')
-plt.savefig('result_credit_NN/false_positive_generated')
+plt.savefig('result_sin/false_positive_generated')
 plt.figure(3)
-plt.plot(np.arange(sequence), X_test[false_negative_index[0][0]])
+[plt.plot(np.arange(sequence), X_test[true_positive_index[0][0]][:,s].reshape(sequence)) for s in range(sequence)]
 plt.title('original data')
-plt.savefig('result_credit_NN/false_negative_original')
+plt.savefig('result_sin/true_positive_original')
 plt.figure(4)
-plt.plot(np.arange(sequence), pred[false_negative_index[0][0]])
+[plt.plot(np.arange(sequence), pred[true_positive_index[0][0]][:,s].reshape(sequence)) for s in range(sequence)]
 plt.title('generated data')
-plt.savefig('result_credit_NN/false_negative_generated')
+plt.savefig('result_sin/true_positive_generated')
 plt.figure(5)
-plt.plot(np.arange(sequence), X_test[true_positive_index[0][0]])
+[plt.plot(np.arange(sequence), X_test[true_negative_index[0][0]][:,s].reshape(sequence)) for s in range(sequence)]
 plt.title('original data')
-plt.savefig('result_credit_NN/true_positive_original')
+plt.savefig('result_sin/true_negative_original')
 plt.figure(6)
-plt.plot(np.arange(sequence), pred[true_positive_index[0][0]])
+[plt.plot(np.arange(sequence), pred[true_negative_index[0][0]][:,s].reshape(sequence)) for s in range(sequence)]
 plt.title('generated data')
-plt.savefig('result_credit_NN/true_positive_generated')
-plt.figure(7)
-plt.plot(np.arange(sequence), X_test[true_negative_index[0][0]])
-plt.title('original data')
-plt.savefig('result_credit_NN/true_negative_original')
-plt.figure(8)
-plt.plot(np.arange(sequence), pred[true_negative_index[0][0]])
-plt.title('generated data')
-plt.savefig('result_credit_NN/true_negative_generated')
-
-### plot sin data
-# sequence = X_test.shape[1]
-# plt.figure(1)
-# [plt.plot(np.arange(sequence), X_test[false_positive_index[0][5]][:,s].reshape(sequence)) for s in range(sequence)]
-# plt.title('original data')
-# plt.savefig('result_sin/false_positive_original')
-# plt.figure(2)
-# [plt.plot(np.arange(sequence), pred[false_positive_index[0][5]][:,s].reshape(sequence)) for s in range(sequence)]
-# plt.title('generated data')
-# plt.savefig('result_sin/false_positive_generated')
-# plt.figure(3)
-# [plt.plot(np.arange(sequence), X_test[true_positive_index[0][0]][:,s].reshape(sequence)) for s in range(sequence)]
-# plt.title('original data')
-# plt.savefig('result_sin/true_positive_original')
-# plt.figure(4)
-# [plt.plot(np.arange(sequence), pred[true_positive_index[0][0]][:,s].reshape(sequence)) for s in range(sequence)]
-# plt.title('generated data')
-# plt.savefig('result_sin/true_positive_generated')
-# plt.figure(5)
-# [plt.plot(np.arange(sequence), X_test[true_negative_index[0][0]][:,s].reshape(sequence)) for s in range(sequence)]
-# plt.title('original data')
-# plt.savefig('result_sin/true_negative_original')
-# plt.figure(6)
-# [plt.plot(np.arange(sequence), pred[true_negative_index[0][0]][:,s].reshape(sequence)) for s in range(sequence)]
-# plt.title('generated data')
-# plt.savefig('result_sin/true_negative_generated')
+plt.savefig('result_sin/true_negative_generated')
 # X_test = X_test.reshape(X_test.shape[:3])
 # pred = pred.reshape(pred.shape[:3])
 # visualization(X_test, pred,'tsne')
@@ -124,55 +89,4 @@ plt.savefig('result_credit_NN/true_negative_generated')
 # diff_heatmap[np.abs(diff_heatmap) > 10] = 1
 #
 #
-#
-# # ax = sns.heatmap(diff_heatmap, linewidth=0.5)          # sns automatically will change the scale to 0~255
-# plt.figure(1, figsize=(3,3))
-# plt.title('query image')
-# plt.imshow(query_heatmap, cmap='Greys')
-# plt.colorbar()
-# plt.figure(2, figsize=(3,3))
-# plt.title('generated image')
-# plt.imshow(pred_heatmap, cmap='Greys')
-# plt.colorbar()
-# plt.figure(3, figsize=(3,3))
-# plt.title('anomaly detection')
-# plt.imshow(query_heatmap, cmap='Greys')
-# plt.imshow(diff_heatmap, cmap='Reds', alpha=0.5)
-# # plt.colorbar()
-# plt.show()
-
-# plt.imshow(query_heatmap, cmap='hot', interpolation='nearest')
-# plt.imshow(pred_heatmap, cmap='hot', interpolation='nearest')
-# plt.imshow(diff_heatmap, cmap='hot', interpolation='nearest')
-# ## matplot view
-# plt.figure(1, figsize=(3, 3))
-# plt.title('query image')
-# plt.imshow(query_heatmap, cmap='hot', interpolation='nearest')
-#
-#
-# plt.figure(2, figsize=(3, 3))
-# plt.title('generated similar image')
-# plt.imshow(pred_heatmap, cmap='hot', interpolation='nearest')
-#
-# plt.figure(3, figsize=(3, 3))
-# plt.title('anomaly detection')
-# plt.imshow(diff_heatmap, cmap='hot', interpolation='nearest')
-# plt.show()
-# cv2.imwrite('./qurey.png', query_heatmap)
-# cv2.imwrite('./pred.png', pred_heatmap)
-# cv2.imwrite('./diff.png', diff_heatmap)
-#
-# ## matplot view
-# plt.figure(1, figsize=(3, 3))
-# plt.title('query image')
-# plt.imshow(cv2.cvtColor(query_heatmap,cv2.COLOR_BGR2RGB))
-#
-# plt.figure(2, figsize=(3, 3))
-# plt.title('generated similar image')
-# plt.imshow(cv2.cvtColor(pred_heatmap,cv2.COLOR_BGR2RGB))
-#
-# plt.figure(3, figsize=(3, 3))
-# plt.title('anomaly detection')
-# plt.imshow(cv2.cvtColor(diff_heatmap,cv2.COLOR_BGR2RGB))
-# plt.show()
 

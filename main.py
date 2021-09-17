@@ -35,9 +35,7 @@ args = parser.parse_args()
 tmp = loadmat('wine.mat')
 X = [[row.flat[0] for row in line] for line in tmp['X']]
 y = [[row.flat[0] for row in line] for line in tmp['y']]
-columns = ['Alcohol','Malic acid','Ash','Alcalinity of ash','Magnesium','Total phenols',
-        'Flavanoids','Nonflavanoid phenols','Proanthocyanins','color intensity','Hue',
-           'OD280/OD315 of diluted wines','Proline']
+
 X = np.array(X)
 y = np.array(y)
 X_train = X[21:][:]
@@ -53,8 +51,8 @@ X_test_l = X_train.shape[1]
 ### 0.3 normalize the data(not use)
 # plt.hist(X_train, 40)
 # plt.savefig('X_train')
-# X_train = (X_train-np.min(X_train))/(np.max(X_train)-np.min(X_train))
-# X_test = (X_test-np.min(X_test))/(np.max(X_test)-np.min(X_test))
+X_train = (X_train-np.min(X_train))/(np.max(X_train)-np.min(X_train))
+X_test = (X_test-np.min(X_test))/(np.max(X_test)-np.min(X_test))
 
 
 
@@ -80,9 +78,10 @@ def anomaly_detection(test_img, g=None, d=None):
     model = anogan.anomaly_detector(g=g, d=d)
     # ano_score, similar_img = anogan.compute_anomaly_score(model, test_img.reshape(1, 28, 28, 1), iterations=500, d=d)
     ### only for simple model credit fraud
-    model.fit(test_img.reshape(1,13),test_img.reshape(1,13),epochs=500,batch_size=1)
-    model.save_weights('weights/test_21.h5',True)
-    model.load_weights('weights/test_21.h5')
+    ano_score = model.fit(test_img.reshape(1,13),test_img.reshape(1,13),epochs=500,batch_size=1)
+    ano_score = ano_score.history['loss'][-1]
+    model.save_weights('weights/test_11.h5',True)
+    model.load_weights('weights/test_11.h5')
     similar_img = model.predict(test_img.reshape(1,13))
 
 
@@ -91,7 +90,7 @@ def anomaly_detection(test_img, g=None, d=None):
 
     # np_residual = (np_residual + 2)/4
 
-    return test_img.reshape(13,1), similar_img.reshape(13,1), np_residual
+    return test_img.reshape(13,1), similar_img.reshape(13,1), np_residual, ano_score
 
 
 
@@ -106,22 +105,23 @@ score = np.zeros((n_test, 1))
 qurey = np.zeros((n_test, X_test_l, 1))
 pred = np.zeros((n_test, X_test_l, 1))
 diff = np.zeros((n_test, X_test_l, 1))
-for i in m:
+for i in [11]:
     # img_idx = args.img_idx
     # label_idx = args.label_idx
     test_img = X_test[i]
     # test_img = np.random.uniform(-1,1, (28,28,1))
 
     start = cv2.getTickCount()
-    qurey[i], pred[i], diff[i] = anomaly_detection(test_img)
+    qurey[i], pred[i], diff[i], score[i] = anomaly_detection(test_img)
     time = (cv2.getTickCount() - start) / cv2.getTickFrequency() * 1000
     # print ('%d label, %d : done'%(label_idx, img_idx), '%.2f'%score, '%.2fms'%time)
     # print("number: ", i, "score:", score[i])
 
-np.save('result_wine_NN/wine_test_qurey', qurey)
-np.save('result_wine_NN/wine_test_pred', pred)
-np.save('result_wine_NN/wine_test_diff', diff)
-np.save('result_wine_NN/X_test', X_test)
-np.save('result_wine_NN/y_test', y_test)
-np.save('result_wine_NN/X_train', X_train)
-np.save('result_wine_NN/y_train', y_train)
+# np.save('result_wine_NN/wine_test_qurey', qurey)
+# np.save('result_wine_NN/wine_test_pred', pred)
+# np.save('result_wine_NN/wine_test_diff', diff)
+# np.save('result_wine_NN/wine_test_score', score)
+# np.save('result_wine_NN/X_test', X_test)
+# np.save('result_wine_NN/y_test', y_test)
+# np.save('result_wine_NN/X_train', X_train)
+# np.save('result_wine_NN/y_train', y_train)
