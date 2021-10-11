@@ -51,8 +51,8 @@ X_test_l = X_train.shape[1]
 ### 0.3 normalize the data(not use)
 # plt.hist(X_train, 40)
 # plt.savefig('X_train')
-X_train = (X_train-np.min(X_train))/(np.max(X_train)-np.min(X_train))
-X_test = (X_test-np.min(X_test))/(np.max(X_test)-np.min(X_test))
+X_train = (X_train-X_train.min(axis=0))/(X_train.max(axis=0)-X_train.min(axis=0))
+X_test = (X_test-X_test.min(axis=0))/(X_test.max(axis=0)-X_test.min(axis=0))
 
 
 

@@ -9,19 +9,19 @@ matplotlib.use('PDF')
 from visualization import visualization, visualization_confusion_matrix
 
 # load test result
-score = np.load('result_wine_NN/wine_test_score.npy')
-qurey= np.load('result_wine_NN/wine_test_qurey.npy')
-pred = np.load('result_wine_NN/wine_test_pred.npy')
-diff = np.load('result_wine_NN/wine_test_diff.npy')
+score = np.load('result_f_wine_NN/wine_test_score.npy')
+qurey= np.load('result_f_wine_NN/wine_test_qurey.npy')
+pred = np.load('result_f_wine_NN/wine_test_pred.npy')
+diff = np.load('result_f_wine_NN/wine_test_diff.npy')
 
-threshold = 100000
+threshold = 0.1
 
 # order prediction result(anomaly:1, normal:0)
 score = score.flatten()
 pred_y = np.zeros((score.shape[0]))
 pred_y[score > threshold] = 1            #anomaly 1, normal 0
-X_test = np.load('result_wine_NN/X_test.npy')
-y_test = np.load('result_wine_NN/y_test.npy').reshape(21)
+X_test = np.load('result_f_wine_NN/X_test.npy')
+y_test = np.load('result_f_wine_NN/y_test.npy').reshape(21)
 
 
 

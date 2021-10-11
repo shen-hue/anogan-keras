@@ -3,9 +3,9 @@ import pandas as pd
 import shap
 import anogan
 
-test = np.load('result_wine_NN/wine_test_qurey.npy').reshape(-1,13)
+test = np.load('result_f_wine_NN/wine_test_qurey.npy').reshape(-1,13)
 test = pd.DataFrame(data=test,index=range(len(test)),columns=range(13))
-test_pred = np.load('result_wine_NN/wine_test_pred.npy').reshape(-1,13)
+test_pred = np.load('result_f_wine_NN/wine_test_pred.npy').reshape(-1,13)
 rec_err = np.linalg.norm(test-test_pred, axis=0)
 # idx = list(rec_err).index(max(rec_err))
 idx = 0
@@ -21,13 +21,13 @@ def sort_by_absolute(df, index):
 top_5_features = sort_by_absolute(df, idx).iloc[:5,:]
 data_summary = shap.kmeans(test, 10)
 data = np.asarray(test)
-data = data[11].reshape(1,13)
+data = data[20].reshape(1,13)
 
 shaptop5features = pd.DataFrame(data=None)
 for i in top_5_features.index:
     # load weights into new model
     loaded_model = anogan.anomaly_detector()
-    loaded_model.load_weights('weights/test_11.h5')
+    loaded_model.load_weights('weights/encode.h5')
     weights = loaded_model.get_weights()
 
     ## make sure the weight for the specific one input feature is set to 0
