@@ -3,13 +3,13 @@ import pandas as pd
 import shap
 import anogan
 
-test = np.load('result_wine_NN/wine_test_qurey.npy').reshape(-1,13)
-test = pd.DataFrame(data=test,index=range(len(test)),columns=range(13))
-test_pred = np.load('result_wine_NN/wine_test_pred.npy').reshape(-1,13)
+test = np.load('result_cluster_3/test_qurey.npy').reshape(-1,2)
+test = pd.DataFrame(data=test,index=range(len(test)),columns=range(2))
+test_pred = np.load('result_cluster_u/test_pred.npy').reshape(-1,2)
 rec_err = np.linalg.norm(test-test_pred, axis=0)
 # idx = list(rec_err).index(max(rec_err))
-idx = 0
-df = pd.DataFrame(data=rec_err, index= range(13),columns=['reconstruction_loss'])
+idx = 299
+df = pd.DataFrame(data=rec_err, index= range(2),columns=['reconstruction_loss'])
 
 def sort_by_absolute(df, index):
     df_abs = df.apply(lambda x: abs(x))
@@ -19,15 +19,15 @@ def sort_by_absolute(df, index):
 
 
 top_5_features = sort_by_absolute(df, idx).iloc[:5,:]
-data_summary = shap.kmeans(test, 10)
+# data_summary = shap.kmeans(test, 10)
 data = np.asarray(test)
-data = data[20].reshape(1,13)
+data = data[299].reshape(1,2)
 
 shaptop5features = pd.DataFrame(data=None)
 for i in top_5_features.index:
     # load weights into new model
     loaded_model = anogan.anomaly_detector()
-    loaded_model.load_weights('weights/test_20.h5')
+    loaded_model.load_weights('weights/test_3_300.h5')
     weights = loaded_model.get_weights()
 
     ## make sure the weight for the specific one input feature is set to 0
@@ -45,9 +45,7 @@ for i in top_5_features.index:
     shaptop5features[str(i)] = pd.Series(shap_values[feature_index])
     shaptop5features[str(i)] = pd.Series(shap_values[feature_index])
 
-columns = ['Alcohol', 'Malic acid', 'Ash', 'Alcalinity of ash', 'Magnesium', 'Total phenols',
-            'Flavanoids', 'Nonflavanoid phenols', 'Proanthocyanins', 'color intensity', 'Hue',
-            'OD280/OD315 of diluted wines', 'Proline']
+columns = ['1','2']
 shaptop5features.index = columns
 shaptop5features.index = df.index
 print()

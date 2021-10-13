@@ -75,7 +75,7 @@ def generator_model():
     fc3 = Dense(1024)(fc2)
     fc3 = LeakyReLU(0.2)(fc3)
     fc3 = BatchNormalization(momentum=0.8)(fc3)
-    fc4 = Dense(13)(fc3)
+    fc4 = Dense(2)(fc3)
     outputs = Activation('tanh')(fc4)
     # outputs = Reshape(X_train.shape[1])(fc4)
     
@@ -85,9 +85,9 @@ def generator_model():
 ### discriminator model define
 def discriminator_model():
     ### simple NN model
-    inputs = Input((13,))
+    inputs = Input((2,))
     # fc1 = Flatten(input_shape=X_train.shape[1])(inputs)
-    fc1 = Dense(512, input_dim=13)(inputs)
+    fc1 = Dense(512, input_dim=2)(inputs)
     fc1 = LeakyReLU(0.2)(fc1)
     fc2 = Dense(256)(fc1)
     fc2 = LeakyReLU(0.2)(fc2)
@@ -133,7 +133,7 @@ def train(BATCH_SIZE, X_train):
     d.compile(loss='mse', optimizer=d_optim)
     
 
-    for epoch in range(10):
+    for epoch in range(50):
         print ("Epoch is", epoch)
         n_iter = int(X_train.shape[0]/BATCH_SIZE)
         progress_bar = Progbar(target=n_iter)
@@ -205,19 +205,23 @@ def anomaly_detector(g=None, d=None):
     g = Model(inputs=g.layers[1].input, outputs=g.layers[-1].output)
     g.trainable = False
     # Input layer cann't be trained. Add new layer as same size & same distribution
-    aInput = Input(shape=(13,))
-    fc1 = Dense(512, input_dim=13)(aInput)
-    fc2 = LeakyReLU(0.2)(fc1)
-    fc3 = Dense(256)(fc2)
-    fc4 = LeakyReLU(0.2)(fc3)
-    gInput = Dense(10)(fc4)
+    # aInput = Input(shape=(2,))
+    # fc1 = Dense(512, input_dim=2)(aInput)
+    # fc2 = LeakyReLU(0.2)(fc1)
+    # fc3 = Dense(256)(fc2)
+    # fc4 = LeakyReLU(0.2)(fc3)
+    # gInput = Dense(10)(fc4)
+    # gInput = Activation('sigmoid')(gInput)
+    aInput = Input(shape=(10,))
+    gInput = Dense((10), trainable=True)(aInput)
+    gInput = Activation('sigmoid')(gInput)
     
     # G & D feature
     G_out = g(gInput)
-    # D_out= intermidiate_model(G_out)
-    model = Model(inputs=aInput, outputs=G_out)
-    model.compile(optimizer='rmsprop',loss='mse')
-    
+    D_out= intermidiate_model(G_out)
+    model = Model(inputs=aInput, outputs=[G_out,D_out])
+    # model.compile(optimizer='rmsprop',loss='mse')
+    model.compile(loss=sum_of_residual, loss_weights= [0.90, 0.10], optimizer='rmsprop')
     # batchnorm learning phase fixed (test) : make non trainable
     K.set_learning_phase(0)
     
@@ -231,9 +235,8 @@ def compute_anomaly_score(model, x, iterations=500, d=None):
     d_x = intermidiate_model.predict(x)
 
     # learning for changing latent
-    loss = model.fit(z, [x, d_x], batch_size=1, epochs=iterations, verbose=0)
+    loss = model.fit(z, [x, d_x], batch_size=1, epochs=iterations, verbose=1)
     similar_data, _ = model.predict(z)
-    
-    loss = loss.history['loss'][-1]
+    # loss = loss.history['loss'][-1]
     
     return loss, similar_data
