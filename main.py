@@ -31,7 +31,7 @@ args = parser.parse_args()
 
 
 ### 0.2 load credit fraud data
-n_samples = 300
+n_samples = 2000
 outliers_fraction = 0.15
 n_outliers = int(outliers_fraction * n_samples)   # anomaly data
 n_inliers = n_samples - n_outliers                # normal data
@@ -48,17 +48,18 @@ datasets = [
           np.array([0.5, 0.25])),
     14. * (np.random.RandomState(42).rand(n_samples, 2) - 0.5)]
 
-X_train = datasets[2]
-y_train = np.asarray([0]*255)
+X = datasets[2]
+
+y_train = np.asarray([0]*n_inliers)
 rng = np.random.RandomState(42)
-X_test = np.concatenate([X_train, rng.uniform(low=-6, high=6,
+X_test = np.concatenate([X, rng.uniform(low=-6, high=6,
                                    size=(n_outliers, 2))], axis=0)
 X_test_l = X_test.shape[1]
-y_test = np.concatenate([[0]*255,[1]*45],axis=0)
+y_test = np.concatenate([[0]*n_inliers,[1]*n_outliers],axis=0)
 
-### 0.3 normalize the data(not use)
-
-
+### 0.3 normalize the data
+X_train = (X-np.min(X))/(np.max(X)-np.min(X))
+X_test_standard = (X_test-np.min(X_test))/(np.max(X_test)-np.min(X_test))
 
 print('train shape:', X_train.shape)
 
@@ -80,17 +81,19 @@ generated_img = anogan.generate(25)
 
 def anomaly_detection(test_img, g=None, d=None):
     model = anogan.anomaly_detector(g=g, d=d)
-    ano_score, similar_img = anogan.compute_anomaly_score(model, test_img.reshape(1, 2), iterations=500, d=d)
+    # ano_score, similar_img = anogan.compute_anomaly_score(model, test_img.reshape(1, 2), iterations=500, d=d)
     ### only for simple model credit fraud
-    # ano_score = model.fit(test_img.reshape(1,2),test_img.reshape(1,2),epochs=50,batch_size=1)
+    ano_score = model.fit(test_img.reshape(1,2),test_img.reshape(1,2),epochs=500,batch_size=1)
     ano_score = ano_score.history['loss'][-1]
-    # plot_model(model, to_file='anomaly_detector.png', show_shapes=True, show_layer_names=True)
-    # model.save_weights('weights/test_3_299.h5',True)
-    # model.load_weights('weights/test_3_299.h5')
-    # similar_img = model.predict(test_img.reshape(1,2))
+    plot_model(model, to_file='anomaly_detector.png', show_shapes=True, show_layer_names=True)
+    model.save_weights('weights/test_3_299.h5',True)
+    model.load_weights('weights/test_3_299.h5')
+    similar_img = model.predict(test_img.reshape(1,2))
+    similar_img = similar_img*(np.max(X_test)-np.min(X_test))+np.min(X_test)
 
 
     ### only for simple model credit fraud
+    test_img = test_img*(np.max(X_test)-np.min(X_test))+np.min(X_test)
     np_residual = test_img.reshape(2,1) - similar_img.reshape(2,1)
 
     # np_residual = (np_residual + 2)/4
@@ -103,7 +106,7 @@ def anomaly_detection(test_img, g=None, d=None):
 ########### change!!!
 
 
-n_test = X_test.shape[0]
+n_test = X_test_standard.shape[0]
 m = range(n_test)  # X_test.shape[0]
 score = np.zeros((n_test, 1))
 # qurey = np.zeros((n_test, X_test_l, X_test_w, 1))
@@ -113,7 +116,7 @@ diff = np.zeros((n_test, X_test_l, 1))
 for i in m:
     # img_idx = args.img_idx
     # label_idx = args.label_idx
-    test_img = X_test[i]
+    test_img = X_test_standard[i]
     # test_img = np.random.uniform(-1,1, (28,28,1))
 
     start = cv2.getTickCount()
@@ -122,11 +125,11 @@ for i in m:
     # print ('%d label, %d : done'%(label_idx, img_idx), '%.2f'%score, '%.2fms'%time)
     # print("number: ", i, "score:", score[i])
 
-np.save('result_cluster_u/test_qurey', qurey)
-np.save('result_cluster_u/test_pred', pred)
-np.save('result_cluster_u/test_diff', diff)
-np.save('result_cluster_u/test_score', score)
-np.save('result_cluster_u/X_test', X_test)
-np.save('result_cluster_u/y_test', y_test)
-np.save('result_cluster_u/X_train', X_train)
-np.save('result_cluster_u/y_train', y_train)
+np.save('result_cluster_3/test_qurey', qurey)
+np.save('result_cluster_3/test_pred', pred)
+np.save('result_cluster_3/test_diff', diff)
+np.save('result_cluster_3/test_score', score)
+np.save('result_cluster_3/X_test', X_test)
+np.save('result_cluster_3/y_test', y_test)
+np.save('result_cluster_3/X_train', X_train)
+np.save('result_cluster_3/y_train', y_train)

@@ -3,26 +3,27 @@ from keras.datasets import mnist
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import confusion_matrix
+import anogan
 import cv2
 import matplotlib
 # matplotlib.use('PDF')
 from visualization import visualization, visualization_confusion_matrix
 
 # load test result
-score = np.load('result_cluster_3/test_score.npy')
-qurey= np.load('result_cluster_3/test_qurey.npy')
-pred = np.load('result_cluster_3/test_pred.npy')
-diff = np.load('result_cluster_3/test_diff.npy')
+score = np.load('result_cluster_5/test_score.npy')
+qurey= np.load('result_cluster_5/test_qurey.npy')
+pred = np.load('result_cluster_5/test_pred.npy')
+diff = np.load('result_cluster_5/test_diff.npy')
 
-threshold = 12
+threshold = 0.02
 
 # order prediction result(anomaly:1, normal:0)
 score = score.flatten()
 pred_y = np.zeros((score.shape[0])).astype(int)
 pred_y[score > threshold] = 1            #anomaly 1, normal 0
-X_train = np.load('result_cluster_3/X_train.npy')
-X_test = np.load('result_cluster_3/X_test.npy')
-y_test = np.load('result_cluster_3/y_test.npy').reshape(300)
+X_train = np.load('result_cluster_5/X_train.npy')
+X_test = np.load('result_cluster_5/X_test.npy')
+y_test = np.load('result_cluster_5/y_test.npy').reshape(345)
 
 
 
@@ -41,6 +42,7 @@ print(C1)
 # plt.xlabel("score")
 # plt.ylabel("probability of each score")
 # plt.savefig('histogram_')
+
 
 plt.figure()
 colors = np.array(['#377eb8', '#ff7f00'])

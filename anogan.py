@@ -67,16 +67,16 @@ def generator_model():
     ### simple NN model
     inputs = Input((10,))
     fc1 = Dense(256, input_dim=10)(inputs)
-    fc1 = LeakyReLU(0.2)(fc1)
-    fc1 = BatchNormalization(momentum=0.8)(fc1)
+    fc1 = Activation('relu')(fc1)
+    # fc1 = BatchNormalization(momentum=0.8)(fc1)
     fc2 = Dense(512)(fc1)
-    fc2 = LeakyReLU(0.2)(fc2)
-    fc2 = BatchNormalization(momentum=0.8)(fc2)
+    fc2 = Activation('relu')(fc2)
+    # fc2 = BatchNormalization(momentum=0.8)(fc2)
     fc3 = Dense(1024)(fc2)
-    fc3 = LeakyReLU(0.2)(fc3)
-    fc3 = BatchNormalization(momentum=0.8)(fc3)
-    fc4 = Dense(2)(fc3)
-    outputs = Activation('tanh')(fc4)
+    fc3 = Activation('relu')(fc3)
+    # fc3 = BatchNormalization(momentum=0.8)(fc3)
+    outputs = Dense(2)(fc3)
+    # outputs = Activation('relu')(fc4)
     # outputs = Reshape(X_train.shape[1])(fc4)
     
     model = Model(inputs=[inputs], outputs=[outputs])
@@ -88,7 +88,7 @@ def discriminator_model():
     inputs = Input((2,))
     # fc1 = Flatten(input_shape=X_train.shape[1])(inputs)
     fc1 = Dense(512, input_dim=2)(inputs)
-    fc1 = LeakyReLU(0.2)(fc1)
+    fc1 = Activation('relu')(fc1)
     fc2 = Dense(256)(fc1)
     fc2 = LeakyReLU(0.2)(fc2)
     outputs = Dense(1)(fc2)
@@ -205,21 +205,21 @@ def anomaly_detector(g=None, d=None):
     g = Model(inputs=g.layers[1].input, outputs=g.layers[-1].output)
     g.trainable = False
     # Input layer cann't be trained. Add new layer as same size & same distribution
-    # aInput = Input(shape=(2,))
-    # fc1 = Dense(512, input_dim=2)(aInput)
-    # fc2 = LeakyReLU(0.2)(fc1)
-    # fc3 = Dense(256)(fc2)
-    # fc4 = LeakyReLU(0.2)(fc3)
-    # gInput = Dense(10)(fc4)
-    # gInput = Activation('sigmoid')(gInput)
-    aInput = Input(shape=(10,))
-    gInput = Dense((10), trainable=True)(aInput)
+    aInput = Input(shape=(2,))
+    fc1 = Dense(512, input_dim=2)(aInput)
+    fc2 = Activation('relu')(fc1)
+    fc3 = Dense(256)(fc2)
+    fc4 = Activation('relu')(fc3)
+    gInput = Dense(10)(fc4)
     gInput = Activation('sigmoid')(gInput)
+    # aInput = Input(shape=(10,))
+    # gInput = Dense((10), trainable=True)(aInput)
+    # gInput = Activation('sigmoid')(gInput)
     
     # G & D feature
     G_out = g(gInput)
-    D_out= intermidiate_model(G_out)
-    model = Model(inputs=aInput, outputs=[G_out,D_out])
+    # D_out= intermidiate_model(G_out)
+    model = Model(inputs=aInput, outputs=G_out)
     # model.compile(optimizer='rmsprop',loss='mse')
     model.compile(loss=sum_of_residual, loss_weights= [0.90, 0.10], optimizer='rmsprop')
     # batchnorm learning phase fixed (test) : make non trainable
@@ -237,6 +237,6 @@ def compute_anomaly_score(model, x, iterations=500, d=None):
     # learning for changing latent
     loss = model.fit(z, [x, d_x], batch_size=1, epochs=iterations, verbose=1)
     similar_data, _ = model.predict(z)
-    # loss = loss.history['loss'][-1]
+    loss = loss.history['loss'][-1]
     
     return loss, similar_data
