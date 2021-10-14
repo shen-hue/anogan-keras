@@ -15,7 +15,7 @@ qurey= np.load('result_cluster_5/test_qurey.npy')
 pred = np.load('result_cluster_5/test_pred.npy')
 diff = np.load('result_cluster_5/test_diff.npy')
 
-threshold = 0.02
+threshold = 0.01
 
 # order prediction result(anomaly:1, normal:0)
 score = score.flatten()

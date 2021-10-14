@@ -3,9 +3,9 @@ import pandas as pd
 import shap
 import anogan
 
-test = np.load('result_cluster_4/test_qurey.npy').reshape(-1,2)
+test = np.load('result_cluster_3/test_qurey.npy').reshape(-1,2)
 test = pd.DataFrame(data=test,index=range(len(test)),columns=range(2))
-test_pred = np.load('result_cluster_4/test_pred.npy').reshape(-1,2)
+test_pred = np.load('result_cluster_3/test_pred.npy').reshape(-1,2)
 rec_err = np.linalg.norm(test-test_pred, axis=0)
 # idx = list(rec_err).index(max(rec_err))
 idx = 299
