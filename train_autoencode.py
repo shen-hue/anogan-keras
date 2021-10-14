@@ -61,14 +61,17 @@ def main():
               np.array([0.5, 0.25])),
         14. * (np.random.RandomState(42).rand(n_samples, 2) - 0.5)]
 
-    X_train = datasets[2]
+    X = datasets[2]
+    X_train = (X - np.min(X)) / (np.max(X) - np.min(X))
     y_train = np.asarray([0] * 255)
     rng = np.random.RandomState(42)
-    X_test = np.concatenate([X_train, rng.uniform(low=-6, high=6,
+    X_test = np.concatenate([X, rng.uniform(low=-6, high=6,
                                                   size=(n_outliers, 2))], axis=0)
+    X_test_standard = (X_test - np.min(X_test)) / (np.max(X_test) - np.min(X_test))
+    y_test = np.concatenate([[0] * n_inliers, [1] * n_outliers], axis=0)
 
     ## Train Autoencoder
-    model = autoencoder(X_train, X_test)
+    model = autoencoder(X_train, X_test_standard)
     print(model.summary())
 
     ## Save the Autoencoder
@@ -76,26 +79,71 @@ def main():
     with open("log/model.json", "w") as json_file:
         json_file.write(model_json)
     # serialize weights to HDF5
-    model.save_weights("log/model.h5")
+    model.save_weights('log/model.h5')
     print("Saved model to disk")
     # load json and create model
     json_file = open('log/model.json', 'r')
     loaded_model_json = json_file.read()
     json_file.close()
 
-    return model, X_train, pd.DataFrame(data=X_test, columns=['1','2']), loaded_model_json
+    return model, X_test, pd.DataFrame(data=X_test_standard, columns=['1','2']), y_test, model
 
 
 if __name__ == "__main__":
-    model, X, X_standard, loaded_model_json = main()
+    model, X, X_standard, y_test, loaded_model_json = main()
     print(
         "Autoencoder available as model, original DataFrame available as X and normalised DataFrame available as X_standard.")
 
 
-model, X, X_standard, loaded_model_json = main()
+model, X, X_standard, y_test, loaded_model_json = main()
 X_reconstruction_standard = model.predict(X_standard)
-rec_err = np.linalg.norm(X_standard - X_reconstruction_standard, axis = 1)
+X_reconstruction = X_reconstruction_standard*(np.max(X)-np.min(X))+np.min(X)
+np_residual = X-X_reconstruction
+diff = np.sum(abs(np_residual),axis=1)
+
+np.save('result_cluster_3/test_qurey', X)
+np.save('result_cluster_3/test_pred', X_reconstruction)
+np.save('result_cluster_3/test_diff', diff)
+# np.save('result_cluster_3/test_score', score)
+np.save('result_cluster_3/X_test', X)
+np.save('result_cluster_3/y_test', y_test)
+
+
+rec_err = np.linalg.norm(X - X_reconstruction, axis = 1)
 idx = list(rec_err).index(max(rec_err))
-df = pd.DataFrame(data = X_reconstruction_standard[idx], index = X.columns, columns = ['reconstruction_loss'])
-df.T
-os.getcwd()
+df = pd.DataFrame(data = X_reconstruction_standard[idx], index = range(2), columns = ['reconstruction_loss'])
+
+def sort_by_absolute(df, index):
+    df_abs = df.apply(lambda x: abs(x))
+    df_abs = df_abs.sort_values('reconstruction_loss', ascending = False)
+    df = df.loc[df_abs.index,:]
+    return df
+
+top_5_features = sort_by_absolute(df, idx).iloc[:5,:]
+data_summary = shap.kmeans(X_standard, 100)
+shaptop5features = pd.DataFrame(data=None)
+
+for i in top_5_features.index:
+    # loaded_model = model_from_json(loaded_model_json)
+    # load weights into new model
+    loaded_model_json.load_weights('log/model.h5')
+    weights = loaded_model_json.get_weights()
+
+    ## make sure the weight for the specific one input feature is set to 0
+    feature_index = list(df.index).index(i)
+    print(feature_index, i)
+    updated_weights = weights[:][0]
+    updated_weights[feature_index] = [0] * len(updated_weights[feature_index])
+    model.get_layer('hid_layer1').set_weights([updated_weights, weights[:][1]])
+
+    ## determine the SHAP values
+    explainer_autoencoder = shap.KernelExplainer(model.predict, data_summary)
+    shap_values = explainer_autoencoder.shap_values(X_standard.loc[idx, :].values)
+
+    ## build up pandas dataframe
+    shaptop5features[str(i)] = pd.Series(shap_values[feature_index])
+
+columns = ['1','2']
+shaptop5features.index = columns
+shaptop5features.index = df.index
+print()
