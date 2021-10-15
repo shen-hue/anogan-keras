@@ -2,24 +2,28 @@ import numpy as np
 from keras.datasets import mnist
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn import manifold
 from sklearn.metrics import confusion_matrix
 
 
 # load test result
-score = np.load('result_cluster_1/test_score.npy')
-qurey= np.load('result_cluster_1/test_qurey.npy')
-pred = np.load('result_cluster_1/test_pred.npy')
-diff = np.load('result_cluster_1/test_diff.npy')
+score = np.load('result_cluster_5/test_score.npy')
+qurey= np.load('result_cluster_5/test_qurey.npy')
+pred = np.load('result_cluster_5/test_pred.npy')
+diff = np.load('result_cluster_5/test_diff.npy')
+diff = diff.reshape(-1,2)
+diff = np.sum(abs(diff), axis=1)
 
-threshold = 5
+
+threshold = 2
 
 # order prediction result(anomaly:1, normal:0)
 score = score.flatten()
 pred_y = np.zeros((score.shape[0])).astype(int)
 pred_y[score > threshold] = 1            #anomaly 1, normal 0
-X_train = np.load('result_cluster_1/X_train.npy')
-X_test = np.load('result_cluster_1/X_test.npy')
-y_test = np.load('result_cluster_1/y_test.npy').reshape(1000)
+# X_train = np.load('result_artificial/X_train.npy')
+X_test = np.load('result_cluster_5/X_test.npy')
+y_test = np.load('result_cluster_5/y_test.npy').reshape(345)
 
 
 
@@ -39,17 +43,18 @@ print(C1)
 # plt.ylabel("probability of each score")
 # plt.savefig('histogram_')
 
-
+# methods = manifold.TSNE(n_components=2,init='pca',random_state=0)
+# Y = methods.fit_transform(X_test)
 plt.figure()
 colors = np.array(['#377eb8', '#ff7f00'])
 # plt.scatter(X_train[:, 0], X_train[:, 1])
 plt.scatter(X_test[:, 0], X_test[:, 1], s=10, color=colors[(pred_y + 1) // 2])
 plt.show()
-
-false_positive_index = np.where((pred_y == 1) & (y_test == 0))
-false_negative_index = np.where((pred_y ==0) & (y_test == 1))
-true_positive_index = np.where((pred_y == 1) & (y_test == 1))
-true_negative_index = np.where((pred_y ==0) & (y_test == 0))
+#
+# false_positive_index = np.where((pred_y == 1) & (y_test == 0))
+# false_negative_index = np.where((pred_y ==0) & (y_test == 1))
+# true_positive_index = np.where((pred_y == 1) & (y_test == 1))
+# true_negative_index = np.where((pred_y ==0) & (y_test == 0))
 ## plot sin data
 
 

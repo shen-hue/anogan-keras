@@ -3,13 +3,13 @@ import pandas as pd
 import shap
 import anogan
 
-test = np.load('result_cluster_1/test_qurey.npy').reshape(-1,6)
-test = pd.DataFrame(data=test,index=range(len(test)),columns=range(6))
-test_pred = np.load('result_cluster_1/test_pred.npy').reshape(-1,6)
+test = np.load('result_cluster_4/test_qurey.npy').reshape(-1,2)
+test = pd.DataFrame(data=test,index=range(len(test)),columns=range(2))
+test_pred = np.load('result_cluster_4/test_pred.npy').reshape(-1,2)
 rec_err = np.linalg.norm(test-test_pred, axis=1)
-idx = list(rec_err).index(max(rec_err))
-# idx = 299
-df = pd.DataFrame(data=test_pred[idx], index= range(6),columns=['reconstruction_loss'])
+# idx = list(rec_err).index(max(rec_err))
+idx = 100
+df = pd.DataFrame(data=test_pred[idx], index= range(2),columns=['reconstruction_loss'])
 
 def sort_by_absolute(df, index):
     df_abs = df.apply(lambda x: abs(x))
@@ -45,7 +45,7 @@ for i in top_5_features.index:
     shaptop5features[str(i)] = pd.Series(shap_values[feature_index])
     shaptop5features[str(i)] = pd.Series(shap_values[feature_index])
 
-columns = ['0','1','2','3','4','5']
+columns = ['0','1']
 shaptop5features.index = columns
 shaptop5features.index = df.index
-print()
+print(shaptop5features)
