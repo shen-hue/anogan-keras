@@ -7,19 +7,19 @@ from sklearn.metrics import confusion_matrix
 
 # load test result
 # score = np.load('result_artificial/test_score.npy')
-qurey= np.load('result_cluster_2/test_qurey.npy')
-pred = np.load('result_cluster_2/test_pred.npy')
-score = np.load('result_cluster_2/test_diff.npy')
+qurey= np.load('result_cluster_4/test_qurey.npy')
+pred = np.load('result_cluster_4/test_pred.npy')
+score = np.load('result_cluster_4/test_diff.npy')
 
-threshold = 6.5
+threshold = 4
 
 # order prediction result(anomaly:1, normal:0)
 score = score.flatten()
 pred_y = np.zeros((score.shape[0])).astype(int)
 pred_y[score > threshold] = 1            #anomaly 1, normal 0
 # X_train = np.load('result_artificial/X_train.npy')
-X_test = np.load('result_cluster_2/X_test.npy')
-y_test = np.load('result_cluster_2/y_test.npy').reshape(300)
+X_test = np.load('result_cluster_4/X_test.npy')
+y_test = np.load('result_cluster_4/y_test.npy').reshape(345)
 
 
 

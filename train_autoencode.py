@@ -61,7 +61,7 @@ def main():
               np.array([0.5, 0.25])),
         14. * (np.random.RandomState(42).rand(n_samples, 2) - 0.5)]
 
-    X = datasets[1]
+    X = datasets[4]
     rng = np.random.RandomState(42)
     X_test = np.concatenate([X, rng.uniform(low=-6, high=6,
                                             size=(n_outliers, 2))], axis=0)
@@ -77,7 +77,7 @@ def main():
     X_train = (X - np.min(X)) / (np.max(X) - np.min(X))
     y_train = np.asarray([0] * n_inliers)
     X_test_standard = (X_test - np.min(X_test)) / (np.max(X_test) - np.min(X_test))
-    y_test = np.concatenate([[0] * n_inliers, [1] * n_outliers], axis=0)
+    y_test = np.concatenate([[0] * n_samples, [1] * n_outliers], axis=0)
 
     ## Train Autoencoder
     model = autoencoder(X_train, X_test_standard)
@@ -110,12 +110,12 @@ X_reconstruction = X_reconstruction_standard*(np.max(X)-np.min(X))+np.min(X)
 np_residual = X-X_reconstruction
 diff = np.sum(abs(np_residual),axis=1)
 
-np.save('result_cluster_2/test_qurey', X)
-np.save('result_cluster_2/test_pred', X_reconstruction)
-np.save('result_cluster_2/test_diff', diff)
+np.save('result_cluster_5/test_qurey', X)
+np.save('result_cluster_5/test_pred', X_reconstruction)
+np.save('result_cluster_5/test_diff', diff)
 # np.save('result_cluster_3/test_score', score)
-np.save('result_cluster_2/X_test', X)
-np.save('result_cluster_2/y_test', y_test)
+np.save('result_cluster_5/X_test', X)
+np.save('result_cluster_5/y_test', y_test)
 
 
 rec_err = np.linalg.norm(X - X_reconstruction, axis = 1)
