@@ -30,12 +30,12 @@ args = parser.parse_args()
 ### 0. prepare data
 
 
-### 0.2 load credit fraud data
-n_samples = 2000
+### 0.2 load cluster data
+n_samples = 300
 outliers_fraction = 0.15
 n_outliers = int(outliers_fraction * n_samples)   # anomaly data
 n_inliers = n_samples - n_outliers                # normal data
-
+#
 blobs_params = dict(random_state=0, n_samples=n_inliers, n_features=2)
 datasets = [
     make_blobs(centers=[[0, 0], [0, 0]], cluster_std=0.5,
@@ -48,12 +48,20 @@ datasets = [
           np.array([0.5, 0.25])),
     14. * (np.random.RandomState(42).rand(n_samples, 2) - 0.5)]
 
-X = datasets[2]
+X = datasets[0]
+### change the feature importance
+# transformation = [[6, 0], [-6, 0]]
+# X = np.dot(X, transformation)
 
+### load artificial data
+# np.random.seed(10)
+# X = np.random.uniform(-6,6,(n_inliers,4))
+# X = np.insert(X,4,values=X[:,0]+X[:,1],axis=1)
+# X = np.insert(X,5,values=X[:,2]+X[:,3],axis=1)
+#
+#
 y_train = np.asarray([0]*n_inliers)
-rng = np.random.RandomState(42)
-X_test = np.concatenate([X, rng.uniform(low=-6, high=6,
-                                   size=(n_outliers, 2))], axis=0)
+X_test = np.concatenate([X, np.random.uniform(-6,6,(n_outliers,2))], axis=0)
 X_test_l = X_test.shape[1]
 y_test = np.concatenate([[0]*n_inliers,[1]*n_outliers],axis=0)
 
@@ -86,8 +94,8 @@ def anomaly_detection(test_img, g=None, d=None):
     ano_score = model.fit(test_img.reshape(1,2),test_img.reshape(1,2),epochs=500,batch_size=1)
     ano_score = ano_score.history['loss'][-1]
     plot_model(model, to_file='anomaly_detector.png', show_shapes=True, show_layer_names=True)
-    model.save_weights('weights/test_3_299.h5',True)
-    model.load_weights('weights/test_3_299.h5')
+    model.save_weights('result_cluster_1/299.h5',True)
+    model.load_weights('result_cluster_1/299.h5')
     similar_img = model.predict(test_img.reshape(1,2))
     similar_img = similar_img*(np.max(X_test)-np.min(X_test))+np.min(X_test)
 
@@ -123,13 +131,13 @@ for i in m:
     qurey[i], pred[i], diff[i], score[i] = anomaly_detection(test_img)
     time = (cv2.getTickCount() - start) / cv2.getTickFrequency() * 1000
     # print ('%d label, %d : done'%(label_idx, img_idx), '%.2f'%score, '%.2fms'%time)
-    # print("number: ", i, "score:", score[i])
-
-np.save('result_cluster_3/test_qurey', qurey)
-np.save('result_cluster_3/test_pred', pred)
-np.save('result_cluster_3/test_diff', diff)
-np.save('result_cluster_3/test_score', score)
-np.save('result_cluster_3/X_test', X_test)
-np.save('result_cluster_3/y_test', y_test)
-np.save('result_cluster_3/X_train', X_train)
-np.save('result_cluster_3/y_train', y_train)
+    print("number: ", i, "score:", score[i])
+#
+np.save('result_cluster_1/test_qurey', qurey)
+np.save('result_cluster_1/test_pred', pred)
+np.save('result_cluster_1/test_diff', diff)
+np.save('result_cluster_1/test_score', score)
+np.save('result_cluster_1/X_test', X_test)
+np.save('result_cluster_1/y_test', y_test)
+np.save('result_cluster_1/X_train', X_train)
+np.save('result_cluster_1/y_train', y_train)
