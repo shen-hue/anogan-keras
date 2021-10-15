@@ -6,20 +6,20 @@ from sklearn.metrics import confusion_matrix
 
 
 # load test result
-# score = np.load('result_cluster_5/test_score.npy')
-qurey= np.load('result_cluster_3/test_qurey.npy')
-pred = np.load('result_cluster_3/test_pred.npy')
-score = np.load('result_cluster_3/test_diff.npy')
+# score = np.load('result_artificial/test_score.npy')
+qurey= np.load('result_cluster_2/test_qurey.npy')
+pred = np.load('result_cluster_2/test_pred.npy')
+score = np.load('result_cluster_2/test_diff.npy')
 
-threshold = 3
+threshold = 6.5
 
 # order prediction result(anomaly:1, normal:0)
 score = score.flatten()
 pred_y = np.zeros((score.shape[0])).astype(int)
 pred_y[score > threshold] = 1            #anomaly 1, normal 0
-X_train = np.load('result_cluster_3/X_train.npy')
-X_test = np.load('result_cluster_3/X_test.npy')
-y_test = np.load('result_cluster_3/y_test.npy').reshape(300)
+# X_train = np.load('result_artificial/X_train.npy')
+X_test = np.load('result_cluster_2/X_test.npy')
+y_test = np.load('result_cluster_2/y_test.npy').reshape(300)
 
 
 
@@ -42,6 +42,7 @@ print(C1)
 
 plt.figure()
 colors = np.array(['#377eb8', '#ff7f00'])
+# plt.scatter(X_train[:, 0], X_train[:, 1])
 plt.scatter(X_test[:, 0], X_test[:, 1], s=10, color=colors[(pred_y + 1) // 2])
 plt.show()
 

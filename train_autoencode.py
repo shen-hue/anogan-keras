@@ -61,12 +61,21 @@ def main():
               np.array([0.5, 0.25])),
         14. * (np.random.RandomState(42).rand(n_samples, 2) - 0.5)]
 
-    X = datasets[2]
-    X_train = (X - np.min(X)) / (np.max(X) - np.min(X))
-    y_train = np.asarray([0] * 255)
+    X = datasets[1]
     rng = np.random.RandomState(42)
     X_test = np.concatenate([X, rng.uniform(low=-6, high=6,
-                                                  size=(n_outliers, 2))], axis=0)
+                                            size=(n_outliers, 2))], axis=0)
+
+    ### load artificial data
+    # np.random.seed(10)
+    # X = np.random.uniform(-6,6,(n_inliers,4))
+    # X = np.insert(X,4,values=X[:,0]+X[:,1],axis=1)
+    # X = np.insert(X,5,values=X[:,2]+X[:,3],axis=1)
+    # X_test = np.concatenate([X, np.random.uniform(-6, 6, (n_outliers, 6))], axis=0)
+
+
+    X_train = (X - np.min(X)) / (np.max(X) - np.min(X))
+    y_train = np.asarray([0] * n_inliers)
     X_test_standard = (X_test - np.min(X_test)) / (np.max(X_test) - np.min(X_test))
     y_test = np.concatenate([[0] * n_inliers, [1] * n_outliers], axis=0)
 
@@ -86,7 +95,7 @@ def main():
     loaded_model_json = json_file.read()
     json_file.close()
 
-    return model, X_test, pd.DataFrame(data=X_test_standard, columns=['1','2']), y_test, model
+    return model, X_test, pd.DataFrame(data=X_test_standard, columns=['0','1']), y_test, loaded_model_json
 
 
 if __name__ == "__main__":
@@ -101,12 +110,12 @@ X_reconstruction = X_reconstruction_standard*(np.max(X)-np.min(X))+np.min(X)
 np_residual = X-X_reconstruction
 diff = np.sum(abs(np_residual),axis=1)
 
-np.save('result_cluster_3/test_qurey', X)
-np.save('result_cluster_3/test_pred', X_reconstruction)
-np.save('result_cluster_3/test_diff', diff)
+np.save('result_cluster_2/test_qurey', X)
+np.save('result_cluster_2/test_pred', X_reconstruction)
+np.save('result_cluster_2/test_diff', diff)
 # np.save('result_cluster_3/test_score', score)
-np.save('result_cluster_3/X_test', X)
-np.save('result_cluster_3/y_test', y_test)
+np.save('result_cluster_2/X_test', X)
+np.save('result_cluster_2/y_test', y_test)
 
 
 rec_err = np.linalg.norm(X - X_reconstruction, axis = 1)
@@ -124,10 +133,10 @@ data_summary = shap.kmeans(X_standard, 100)
 shaptop5features = pd.DataFrame(data=None)
 
 for i in top_5_features.index:
-    # loaded_model = model_from_json(loaded_model_json)
+    loaded_model = model_from_json(loaded_model_json)
     # load weights into new model
-    loaded_model_json.load_weights('log/model.h5')
-    weights = loaded_model_json.get_weights()
+    loaded_model.load_weights('log/model.h5')
+    weights = loaded_model.get_weights()
 
     ## make sure the weight for the specific one input feature is set to 0
     feature_index = list(df.index).index(i)
@@ -143,7 +152,7 @@ for i in top_5_features.index:
     ## build up pandas dataframe
     shaptop5features[str(i)] = pd.Series(shap_values[feature_index])
 
-columns = ['1','2']
+columns = ['0','1']
 shaptop5features.index = columns
 shaptop5features.index = df.index
-print()
+print(shaptop5features)
