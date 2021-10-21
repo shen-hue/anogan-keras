@@ -44,34 +44,34 @@ def autoencoder(X_train, X_test):
 
 
 def main():
-    n_samples = 300
+    n_samples = 1000000
     outliers_fraction = 0.15
     n_outliers = int(outliers_fraction * n_samples)  # anomaly data
     n_inliers = n_samples - n_outliers  # normal data
 
-    blobs_params = dict(random_state=0, n_samples=n_inliers, n_features=2)
-    datasets = [
-        make_blobs(centers=[[0, 0], [0, 0]], cluster_std=0.5,
-                   **blobs_params)[0],
-        make_blobs(centers=[[2, 2], [-2, -2]], cluster_std=[0.5, 0.5],
-                   **blobs_params)[0],
-        make_blobs(centers=[[2, 2], [-2, -2]], cluster_std=[1.5, .3],
-                   **blobs_params)[0],
-        4. * (make_moons(n_samples=n_samples, noise=.05, random_state=0)[0] -
-              np.array([0.5, 0.25])),
-        14. * (np.random.RandomState(42).rand(n_samples, 2) - 0.5)]
-
-    X = datasets[4]
-    rng = np.random.RandomState(42)
-    X_test = np.concatenate([X, rng.uniform(low=-6, high=6,
-                                            size=(n_outliers, 2))], axis=0)
+    # blobs_params = dict(random_state=0, n_samples=n_inliers, n_features=2)
+    # datasets = [
+    #     make_blobs(centers=[[0, 0], [0, 0]], cluster_std=0.5,
+    #                **blobs_params)[0],
+    #     make_blobs(centers=[[2, 2], [-2, -2]], cluster_std=[0.5, 0.5],
+    #                **blobs_params)[0],
+    #     make_blobs(centers=[[2, 2], [-2, -2]], cluster_std=[1.5, .3],
+    #                **blobs_params)[0],
+    #     4. * (make_moons(n_samples=n_samples, noise=.05, random_state=0)[0] -
+    #           np.array([0.5, 0.25])),
+    #     14. * (np.random.RandomState(42).rand(n_samples, 2) - 0.5)]
+    #
+    # X = datasets[4]
+    # rng = np.random.RandomState(42)
+    # X_test = np.concatenate([X, rng.uniform(low=-6, high=6,
+    #                                         size=(n_outliers, 2))], axis=0)
 
     ### load artificial data
-    # np.random.seed(10)
-    # X = np.random.uniform(-6,6,(n_inliers,4))
-    # X = np.insert(X,4,values=X[:,0]+X[:,1],axis=1)
-    # X = np.insert(X,5,values=X[:,2]+X[:,3],axis=1)
-    # X_test = np.concatenate([X, np.random.uniform(-6, 6, (n_outliers, 6))], axis=0)
+    np.random.seed(10)
+    X = np.random.uniform(-6,6,(n_inliers,4))
+    X = np.insert(X,4,values=X[:,0]+X[:,1],axis=1)
+    X = np.insert(X,5,values=X[:,2]+X[:,3],axis=1)
+    X_test = np.concatenate([X, np.random.uniform(-6, 6, (n_outliers, 6))], axis=0)
 
 
     X_train = (X - np.min(X)) / (np.max(X) - np.min(X))
@@ -95,7 +95,7 @@ def main():
     loaded_model_json = json_file.read()
     json_file.close()
 
-    return model, X_test, pd.DataFrame(data=X_test_standard, columns=['0','1']), y_test, loaded_model_json
+    return model, X_test, pd.DataFrame(data=X_test_standard, columns=['0','1','2','3','4','5']), y_test, loaded_model_json
 
 
 if __name__ == "__main__":
@@ -110,17 +110,17 @@ X_reconstruction = X_reconstruction_standard*(np.max(X)-np.min(X))+np.min(X)
 np_residual = X-X_reconstruction
 diff = np.sum(abs(np_residual),axis=1)
 
-np.save('result_cluster_5/test_qurey', X)
-np.save('result_cluster_5/test_pred', X_reconstruction)
-np.save('result_cluster_5/test_diff', diff)
+np.save('result_artificial/test_qurey', X)
+np.save('result_artificial/test_pred', X_reconstruction)
+np.save('result_artificial/test_diff', diff)
 # np.save('result_cluster_3/test_score', score)
-np.save('result_cluster_5/X_test', X)
-np.save('result_cluster_5/y_test', y_test)
+np.save('result_artificial/X_test', X)
+np.save('result_artificial/y_test', y_test)
 
 
 rec_err = np.linalg.norm(X - X_reconstruction, axis = 1)
 idx = list(rec_err).index(max(rec_err))
-df = pd.DataFrame(data = X_reconstruction_standard[idx], index = range(2), columns = ['reconstruction_loss'])
+df = pd.DataFrame(data = X_reconstruction_standard[idx], index = range(6), columns = ['reconstruction_loss'])
 
 def sort_by_absolute(df, index):
     df_abs = df.apply(lambda x: abs(x))
