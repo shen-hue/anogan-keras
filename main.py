@@ -118,7 +118,7 @@ diff = np.zeros((n_test, X_test_l, 1))
 
 # train the encode on test data
 model = anogan.anomaly_detector(g=None, d=None)
-ano_score = model.fit(X_test_standard,X_test_standard,epochs=100,batch_size=1)
+ano_score = model.fit(X_test_standard,X_test_standard,epochs=500,batch_size=1)
 model.save_weights('weights/5_encode.h5', True)
 
 
