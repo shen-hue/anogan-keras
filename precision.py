@@ -7,23 +7,23 @@ from sklearn.metrics import confusion_matrix
 
 
 # load test result
-score = np.load('result_high_d/test_score.npy')
-qurey= np.load('result_high_d/test_qurey.npy')
-pred = np.load('result_high_d/test_pred.npy')
-diff = np.load('result_high_d/test_diff.npy')
+score = np.load('result_high_d_LSTM/test_score.npy')
+qurey= np.load('result_high_d_LSTM/test_qurey.npy')
+pred = np.load('result_high_d_LSTM/test_pred.npy')
+diff = np.load('result_high_d_LSTM/test_diff.npy')
 diff = diff.reshape(-1,6)
 diff = np.sum(abs(diff), axis=1)
 
 
-threshold = 0.3
+threshold = 1.5
 
 # order prediction result(anomaly:1, normal:0)
 score = score.flatten()
 pred_y = np.zeros((score.shape[0])).astype(int)
 pred_y[score > threshold] = 1            #anomaly 1, normal 0
 # X_train = np.load('result_artificial/X_train.npy')
-X_test = np.load('result_high_d/X_test.npy')
-y_test = np.load('result_high_d/y_test.npy').reshape(300)
+X_test = np.load('result_high_d_LSTM/X_test.npy')
+y_test = np.load('result_high_d_LSTM/y_test.npy').reshape(300)
 
 
 

@@ -31,37 +31,37 @@ args = parser.parse_args()
 
 
 ### 0.2 load cluster data
-n_samples = 300
+n_samples = 1000
 outliers_fraction = 0.15
 n_outliers = int(outliers_fraction * n_samples)   # anomaly data
 n_inliers = n_samples - n_outliers                # normal data
 #
-blobs_params = dict(random_state=0, n_samples=n_inliers, n_features=6)
-datasets = [
-    make_blobs(centers=[[0, 0,0,0,0,0], [0, 0,0,0,0,0]], cluster_std=0.5,
-               **blobs_params)[0],
-    make_blobs(centers=[[2, 2], [-2, -2]], cluster_std=[0.5, 0.5],
-               **blobs_params)[0],
-    make_blobs(centers=[[2, 2], [-2, -2]], cluster_std=[1.5, .3],
-               **blobs_params)[0],
-    4. * (make_moons(n_samples=n_samples, noise=.05, random_state=0)[0] -
-          np.array([0.5, 0.25])),
-    14. * (np.random.RandomState(42).rand(n_samples, 2) - 0.5)]
-
-X = datasets[0]
-rng = np.random.RandomState(42)
-X_test = np.concatenate([X, rng.uniform(low=-6, high=6,
-                                        size=(n_outliers, 6))], axis=0)
+# blobs_params = dict(random_state=0, n_samples=n_inliers, n_features=6)
+# datasets = [
+#     make_blobs(centers=[[0, 0,0,0,0,0], [0, 0,0,0,0,0]], cluster_std=0.5,
+#                **blobs_params)[0],
+#     make_blobs(centers=[[2, 2], [-2, -2]], cluster_std=[0.5, 0.5],
+#                **blobs_params)[0],
+#     make_blobs(centers=[[2, 2], [-2, -2]], cluster_std=[1.5, .3],
+#                **blobs_params)[0],
+#     4. * (make_moons(n_samples=n_samples, noise=.05, random_state=0)[0] -
+#           np.array([0.5, 0.25])),
+#     14. * (np.random.RandomState(42).rand(n_samples, 2) - 0.5)]
+#
+# X = datasets[0]
+# rng = np.random.RandomState(42)
+# X_test = np.concatenate([X, rng.uniform(low=-6, high=6,
+#                                         size=(n_outliers, 6))], axis=0)
 ### change the feature importance
 # transformation = [[6, 0], [-6, 0]]
 # X = np.dot(X, transformation)
 
 ### load artificial data
-# np.random.seed(10)
-# X = np.random.uniform(-6,6,(n_inliers,4))
-# X = np.insert(X,4,values=X[:,0]+X[:,1],axis=1)
-# X = np.insert(X,5,values=X[:,2]+X[:,3],axis=1)
-# X_test = np.concatenate([X, np.random.uniform(-6,6,(n_outliers,2))], axis=0)
+np.random.seed(10)
+X = np.random.uniform(0,6,(n_inliers,4))
+X = np.insert(X,4,values=X[:,0]+X[:,1],axis=1)
+X = np.insert(X,5,values=X[:,2]+X[:,3],axis=1)
+X_test = np.concatenate([X, np.random.uniform(0,6,(n_outliers,6))], axis=0)
 #
 #
 y_train = np.asarray([0]*n_inliers)
@@ -71,6 +71,11 @@ y_test = np.concatenate([[0]*n_inliers,[1]*n_outliers],axis=0)
 ### 0.3 normalize the data
 X_train = (X-np.min(X))/(np.max(X)-np.min(X))
 X_test_standard = (X_test-np.min(X_test))/(np.max(X_test)-np.min(X_test))
+
+### 0.4 reshape the data(LSTM model)
+X_train = X_train.reshape(-1,6,1)
+X_test_standard = X_test_standard.reshape(-1,6,1)
+
 
 print('train shape:', X_train.shape)
 
@@ -94,12 +99,12 @@ def anomaly_detection(test_img, g=None, d=None):
     model = anogan.anomaly_detector(g=g, d=d)
     # ano_score, similar_img = anogan.compute_anomaly_score(model, test_img.reshape(1, 2), iterations=500, d=d)
     ### only for simple model credit fraud
-    ano_score = model.fit(test_img.reshape(1,6),test_img.reshape(1,6),epochs=500,batch_size=1)
+    ano_score = model.fit(test_img.reshape(1,-1,1),test_img.reshape(1,-1,1),epochs=50,batch_size=1)
     ano_score = ano_score.history['loss'][-1]
     plot_model(model, to_file='anomaly_detector.png', show_shapes=True, show_layer_names=True)
-    model.save_weights('result_high_d/100.h5',True)
-    model.load_weights('result_high_d/100.h5')
-    similar_img = model.predict(test_img.reshape(1,6))
+    model.save_weights('result_high_d_LSTM/100.h5',True)
+    model.load_weights('result_high_d_LSTM/100.h5')
+    similar_img = model.predict(test_img.reshape(1,-1,1))
     similar_img = similar_img*(np.max(X_test)-np.min(X_test))+np.min(X_test)
 
 
@@ -124,7 +129,7 @@ score = np.zeros((n_test, 1))
 qurey = np.zeros((n_test, X_test_l, 1))
 pred = np.zeros((n_test, X_test_l, 1))
 diff = np.zeros((n_test, X_test_l, 1))
-for i in [100]:
+for i in m:
     # img_idx = args.img_idx
     # label_idx = args.label_idx
     test_img = X_test_standard[i]
@@ -136,11 +141,11 @@ for i in [100]:
     # print ('%d label, %d : done'%(label_idx, img_idx), '%.2f'%score, '%.2fms'%time)
     print("number: ", i, "score:", score[i])
 #
-# np.save('result_high_d/test_qurey', qurey)
-# np.save('result_high_d/test_pred', pred)
-# np.save('result_high_d/test_diff', diff)
-# np.save('result_high_d/test_score', score)
-# np.save('result_high_d/X_test', X_test)
-# np.save('result_high_d/y_test', y_test)
-# np.save('result_high_d/X_train', X_train)
-# np.save('result_high_d/y_train', y_train)
+np.save('result_high_d_LSTM/test_qurey', qurey)
+np.save('result_high_d_LSTM/test_pred', pred)
+np.save('result_high_d_LSTM/test_diff', diff)
+np.save('result_high_d_LSTM/test_score', score)
+np.save('result_high_d_LSTM/X_test', X_test)
+np.save('result_high_d_LSTM/y_test', y_test)
+np.save('result_high_d_LSTM/X_train', X_train)
+np.save('result_high_d_LSTM/y_train', y_train)
