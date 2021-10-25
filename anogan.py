@@ -75,7 +75,7 @@ def generator_model():
     fc3 = Dense(1024)(fc2)
     fc3 = Activation('relu')(fc3)
     # fc3 = BatchNormalization(momentum=0.8)(fc3)
-    outputs = Dense(6)(fc3)
+    outputs = Dense(2)(fc3)
     # outputs = Activation('relu')(fc4)
     # outputs = Reshape(X_train.shape[1])(fc4)
     
@@ -85,9 +85,9 @@ def generator_model():
 ### discriminator model define
 def discriminator_model():
     ### simple NN model
-    inputs = Input((6,))
+    inputs = Input((2,))
     # fc1 = Flatten(input_shape=X_train.shape[1])(inputs)
-    fc1 = Dense(512, input_dim=6)(inputs)
+    fc1 = Dense(512, input_dim=2)(inputs)
     fc1 = Activation('relu')(fc1)
     fc2 = Dense(256)(fc1)
     fc2 = LeakyReLU(0.2)(fc2)
@@ -205,8 +205,8 @@ def anomaly_detector(g=None, d=None):
     g = Model(inputs=g.layers[1].input, outputs=g.layers[-1].output)
     g.trainable = False
     # Input layer cann't be trained. Add new layer as same size & same distribution
-    aInput = Input(shape=(6,))
-    fc1 = Dense(512, input_dim=6)(aInput)
+    aInput = Input(shape=(2,))
+    fc1 = Dense(512, input_dim=2)(aInput)
     fc2 = Activation('relu')(fc1)
     fc3 = Dense(256)(fc2)
     fc4 = Activation('relu')(fc3)

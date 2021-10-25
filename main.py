@@ -14,7 +14,6 @@ import argparse
 import anogan
 import keras
 import pandas as pd
-from load_data import sine_data_generation, anomaly_sine_data_generation
 from sklearn.datasets import make_blobs,make_moons
 from scipy.io import loadmat
 
@@ -38,7 +37,7 @@ n_inliers = n_samples - n_outliers                # normal data
 #
 blobs_params = dict(random_state=0, n_samples=n_inliers, n_features=6)
 datasets = [
-    make_blobs(centers=[[0, 0,0,0,0,0], [0, 0,0,0,0,0]], cluster_std=0.5,
+    make_blobs(centers=[[0, 0], [0, 0]], cluster_std=0.5,
                **blobs_params)[0],
     make_blobs(centers=[[2, 2], [-2, -2]], cluster_std=[0.5, 0.5],
                **blobs_params)[0],
@@ -51,26 +50,28 @@ datasets = [
 X = datasets[0]
 rng = np.random.RandomState(42)
 X_test = np.concatenate([X, rng.uniform(low=-6, high=6,
-                                        size=(n_outliers, 6))], axis=0)
+                                        size=(n_outliers, 2))], axis=0)
 ### change the feature importance
 # transformation = [[6, 0], [-6, 0]]
 # X = np.dot(X, transformation)
 
 ### load artificial data
 # np.random.seed(10)
-# X = np.random.uniform(-6,6,(n_inliers,4))
+# X = np.random.uniform(0,6,(n_inliers,4))
 # X = np.insert(X,4,values=X[:,0]+X[:,1],axis=1)
 # X = np.insert(X,5,values=X[:,2]+X[:,3],axis=1)
-# X_test = np.concatenate([X, np.random.uniform(-6,6,(n_outliers,2))], axis=0)
+# X_test = np.concatenate([X, np.random.uniform(0,6,(n_outliers,6))], axis=0)
 #
 #
+
 y_train = np.asarray([0]*n_inliers)
-X_test_l = X_test.shape[1]
 y_test = np.concatenate([[0]*n_inliers,[1]*n_outliers],axis=0)
 
 ### 0.3 normalize the data
 X_train = (X-np.min(X))/(np.max(X)-np.min(X))
 X_test_standard = (X_test-np.min(X_test))/(np.max(X_test)-np.min(X_test))
+
+
 
 print('train shape:', X_train.shape)
 
@@ -90,26 +91,26 @@ generated_img = anogan.generate(25)
 
 ### 3. other class anomaly detection
 
-def anomaly_detection(test_img, g=None, d=None):
+def anomaly_detection(test_img, number, g=None, d=None):
     model = anogan.anomaly_detector(g=g, d=d)
     # ano_score, similar_img = anogan.compute_anomaly_score(model, test_img.reshape(1, 2), iterations=500, d=d)
     ### only for simple model credit fraud
-    ano_score = model.fit(test_img.reshape(1,6),test_img.reshape(1,6),epochs=500,batch_size=1)
+    ano_score = model.fit(test_img.reshape(1,2),test_img.reshape(1,2),epochs=50,batch_size=1)
     ano_score = ano_score.history['loss'][-1]
     plot_model(model, to_file='anomaly_detector.png', show_shapes=True, show_layer_names=True)
-    model.save_weights('result_high_d/100.h5',True)
-    model.load_weights('result_high_d/100.h5')
-    similar_img = model.predict(test_img.reshape(1,6))
+    model.save_weights('result_cluster_1/weights/test_1_'+str(number)+'.h5',True)
+    model.load_weights('result_cluster_1/weights/test_1_'+str(number)+'.h5')
+    similar_img = model.predict(test_img.reshape(1,2))
     similar_img = similar_img*(np.max(X_test)-np.min(X_test))+np.min(X_test)
 
 
     ### only for simple model credit fraud
     test_img = test_img*(np.max(X_test)-np.min(X_test))+np.min(X_test)
-    np_residual = test_img.reshape(6,1) - similar_img.reshape(6,1)
+    np_residual = test_img.reshape(1,2) - similar_img.reshape(1,2)
 
     # np_residual = (np_residual + 2)/4
 
-    return test_img.reshape(6,1), similar_img.reshape(6,1), np_residual, ano_score
+    return test_img.reshape(1,2), similar_img.reshape(1,2), np_residual, ano_score
 
 
 
@@ -118,29 +119,30 @@ def anomaly_detection(test_img, g=None, d=None):
 
 
 n_test = X_test_standard.shape[0]
+l_test = X_test_standard.shape[1]
 m = range(n_test)  # X_test.shape[0]
-score = np.zeros((n_test, 1))
+score = np.zeros((n_test))
 # qurey = np.zeros((n_test, X_test_l, X_test_w, 1))
-qurey = np.zeros((n_test, X_test_l, 1))
-pred = np.zeros((n_test, X_test_l, 1))
-diff = np.zeros((n_test, X_test_l, 1))
-for i in [100]:
+qurey = np.zeros((n_test, l_test))
+pred = np.zeros((n_test, l_test))
+diff = np.zeros((n_test, l_test))
+for i in m:
     # img_idx = args.img_idx
     # label_idx = args.label_idx
     test_img = X_test_standard[i]
     # test_img = np.random.uniform(-1,1, (28,28,1))
 
     start = cv2.getTickCount()
-    qurey[i], pred[i], diff[i], score[i] = anomaly_detection(test_img)
+    qurey[i], pred[i], diff[i], score[i] = anomaly_detection(test_img,i)
     time = (cv2.getTickCount() - start) / cv2.getTickFrequency() * 1000
     # print ('%d label, %d : done'%(label_idx, img_idx), '%.2f'%score, '%.2fms'%time)
     print("number: ", i, "score:", score[i])
 #
-# np.save('result_high_d/test_qurey', qurey)
-# np.save('result_high_d/test_pred', pred)
-# np.save('result_high_d/test_diff', diff)
-# np.save('result_high_d/test_score', score)
-# np.save('result_high_d/X_test', X_test)
-# np.save('result_high_d/y_test', y_test)
-# np.save('result_high_d/X_train', X_train)
-# np.save('result_high_d/y_train', y_train)
+np.save('result_cluster_1/test_qurey', qurey)
+np.save('result_cluster_1/test_pred', pred)
+np.save('result_cluster_1/test_diff', diff)
+np.save('result_cluster_1/test_score', score)
+np.save('result_cluster_1/X_test', X_test)
+np.save('result_cluster_1/y_test', y_test)
+np.save('result_cluster_1/X_train', X_train)
+np.save('result_cluster_1/y_train', y_train)
