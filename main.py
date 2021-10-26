@@ -91,26 +91,26 @@ generated_img = anogan.generate(25)
 
 ### 3. other class anomaly detection
 
-def anomaly_detection(test_img, number, g=None, d=None):
+def anomaly_detection(test_img, number,n, g=None, d=None):
     model = anogan.anomaly_detector(g=g, d=d)
     # ano_score, similar_img = anogan.compute_anomaly_score(model, test_img.reshape(1, 2), iterations=500, d=d)
     ### only for simple model credit fraud
-    ano_score = model.fit(test_img.reshape(1,2),test_img.reshape(1,2),epochs=50,batch_size=1)
+    ano_score = model.fit(test_img.reshape(1,n),test_img.reshape(1,n),epochs=50,batch_size=1)
     ano_score = ano_score.history['loss'][-1]
     plot_model(model, to_file='anomaly_detector.png', show_shapes=True, show_layer_names=True)
-    model.save_weights('result_cluster_1/weights/test_1_'+str(number)+'.h5',True)
-    model.load_weights('result_cluster_1/weights/test_1_'+str(number)+'.h5')
-    similar_img = model.predict(test_img.reshape(1,2))
+    model.save_weights('result_high_d/weights/test_1_'+str(number)+'.h5',True)
+    model.load_weights('result_high_d/weights/test_1_'+str(number)+'.h5')
+    similar_img = model.predict(test_img.reshape(1,n))
     similar_img = similar_img*(np.max(X_test)-np.min(X_test))+np.min(X_test)
 
 
     ### only for simple model credit fraud
     test_img = test_img*(np.max(X_test)-np.min(X_test))+np.min(X_test)
-    np_residual = test_img.reshape(1,2) - similar_img.reshape(1,2)
+    np_residual = test_img.reshape(1,n) - similar_img.reshape(1,n)
 
     # np_residual = (np_residual + 2)/4
 
-    return test_img.reshape(1,2), similar_img.reshape(1,2), np_residual, ano_score
+    return test_img.reshape(1,n), similar_img.reshape(1,n), np_residual, ano_score
 
 
 
@@ -133,16 +133,16 @@ for i in m:
     # test_img = np.random.uniform(-1,1, (28,28,1))
 
     start = cv2.getTickCount()
-    qurey[i], pred[i], diff[i], score[i] = anomaly_detection(test_img,i)
+    qurey[i], pred[i], diff[i], score[i] = anomaly_detection(test_img,i,l_test)
     time = (cv2.getTickCount() - start) / cv2.getTickFrequency() * 1000
     # print ('%d label, %d : done'%(label_idx, img_idx), '%.2f'%score, '%.2fms'%time)
     print("number: ", i, "score:", score[i])
 #
-np.save('result_cluster_1/test_qurey', qurey)
-np.save('result_cluster_1/test_pred', pred)
-np.save('result_cluster_1/test_diff', diff)
-np.save('result_cluster_1/test_score', score)
-np.save('result_cluster_1/X_test', X_test)
-np.save('result_cluster_1/y_test', y_test)
-np.save('result_cluster_1/X_train', X_train)
-np.save('result_cluster_1/y_train', y_train)
+# np.save('result_high_d/test_qurey', qurey)
+# np.save('result_high_d/test_pred', pred)
+# np.save('result_high_d/test_diff', diff)
+# np.save('result_high_d/test_score', score)
+# np.save('result_high_d/X_test', X_test)
+# np.save('result_high_d/y_test', y_test)
+# np.save('result_high_d/X_train', X_train)
+# np.save('result_high_d/y_train', y_train)

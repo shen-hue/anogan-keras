@@ -16,7 +16,7 @@ diff = np.load('result_cluster_1/test_diff.npy')
 
 
 
-threshold = 0.012
+threshold = 0.0185
 
 # order prediction result(anomaly:1, normal:0)
 score = score.flatten()
@@ -44,12 +44,13 @@ print(C1)
 # plt.ylabel("probability of each score")
 # plt.savefig('histogram_')
 
-methods = manifold.TSNE(n_components=2,init='pca',random_state=0)
-Y = methods.fit_transform(X_test)
+### high dimension
+# methods = manifold.TSNE(n_components=2,init='pca',random_state=0)
+# Y = methods.fit_transform(X_test)
 plt.figure()
 colors = np.array(['#377eb8', '#ff7f00'])
 # plt.scatter(X_train[:, 0], X_train[:, 1])
-plt.scatter(Y[:, 0], Y[:, 1], s=10, color=colors[(pred_y + 1) // 2])
+plt.scatter(X_test[:, 0], X_test[:, 1], s=10, color=colors[(pred_y + 1) // 2])
 plt.show()
 #
 # false_positive_index = np.where((pred_y == 1) & (y_test == 0))
@@ -62,17 +63,33 @@ import plotly.graph_objs as go
 result = pd.read_csv("result_cluster_1/shapvalue.csv")
 dfnormal = result.loc[pred_y==0]
 dfanomaly = result.loc[pred_y==1]
-trace1 = go.Scatter(x=qurey[pred_y==0][:,0],y=qurey[pred_y==0][:,1],
+trace1 = go.Scatter(x=X_test[pred_y==0][:,0],y=X_test[pred_y==0][:,1],mode="markers",
                     name="normal",marker=dict(color='rgba(255, 128, 255, 0.8)'),
                     text=dfnormal.shapvalue)
-trace2 = go.Scatter(x=qurey[pred_y==1][:,0],y=qurey[pred_y==1][:,1],
-                    name="normal",marker=dict(color='rgba(255, 128, 2, 0.8)'),
+trace2 = go.Scatter(x=X_test[pred_y==1][:,0],y=X_test[pred_y==1][:,1],mode="markers",
+                    name="anomaly",marker=dict(color='rgba(255, 128, 2, 0.8)'),
                     text=dfanomaly.shapvalue)
 data = [trace1,trace2]
 layout = dict(title='shap value of all the data',
               xaxis=dict(title='feature 1'),
               yaxis=dict(title='feature 2'))
 fig = dict(data=data,layout=layout)
-iplot(fig)
 
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
+app = dash.Dash(__name__)
+app.layout = html.Div(children=[
+    html.H1(children='Hello Dash'),
+
+    html.Div(children='''
+        Dash: A web application framework for your data.
+    '''),
+
+    dcc.Graph(
+        id='example-graph',
+        figure=fig
+    )
+])
+app.run_server(debug=True)
 

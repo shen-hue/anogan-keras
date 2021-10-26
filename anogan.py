@@ -133,7 +133,7 @@ def train(BATCH_SIZE, X_train):
     d.compile(loss='mse', optimizer=d_optim)
     
 
-    for epoch in range(50):
+    for epoch in range(500):
         print ("Epoch is", epoch)
         n_iter = int(X_train.shape[0]/BATCH_SIZE)
         progress_bar = Progbar(target=n_iter)
