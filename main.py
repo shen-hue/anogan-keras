@@ -72,8 +72,8 @@ X_train = (X-np.min(X))/(np.max(X)-np.min(X))
 X_test_standard = (X_test-np.min(X_test))/(np.max(X_test)-np.min(X_test))
 
 ### 0.4 reshape the data(LSTM model)
-X_train = X_train.reshape(-1,6,1)
-X_test_standard = X_test_standard.reshape(-1,6,1)
+# X_train = X_train.reshape(-1,6,1)
+# X_test_standard = X_test_standard.reshape(-1,6,1)
 
 
 print('train shape:', X_train.shape)
@@ -96,24 +96,24 @@ generated_img = anogan.generate(25)
 
 def anomaly_detection(test_img, g=None, d=None):
     model = anogan.anomaly_detector(g=g, d=d)
-    ano_score, similar_img = anogan.compute_anomaly_score(model, test_img.reshape(1,-1,1), iterations=500, d=d)
+    # ano_score, similar_img = anogan.compute_anomaly_score(model, test_img.reshape(1,-1), iterations=500, d=d)
     ### only for simple model credit fraud
-    # ano_score = model.fit(test_img.reshape(1,-1,1),test_img.reshape(1,-1,1),epochs=50,batch_size=1)
-    # ano_score = ano_score.history['loss'][-1]
+    ano_score = model.fit(test_img.reshape(1,-1),test_img.reshape(1,-1),epochs=500,batch_size=1)
+    ano_score = ano_score.history['loss'][-1]
     # plot_model(model, to_file='anomaly_detector.png', show_shapes=True, show_layer_names=True)
-    # model.save_weights('result_artificial/299.h5',True)
-    # model.load_weights('result_artificial/299.h5')
-    # similar_img = model.predict(test_img.reshape(1,-1,1))
+    model.save_weights('result_artificial/299.h5',True)
+    model.load_weights('result_artificial/299.h5')
+    similar_img = model.predict(test_img.reshape(1,-1))
     similar_img = similar_img*(np.max(X_test)-np.min(X_test))+np.min(X_test)
 
 
     ### only for simple model credit fraud
     test_img = test_img*(np.max(X_test)-np.min(X_test))+np.min(X_test)
-    np_residual = test_img.reshape(6,1) - similar_img.reshape(6,1)
+    np_residual = test_img.reshape(1,6) - similar_img.reshape(1,6)
 
     # np_residual = (np_residual + 2)/4
 
-    return test_img.reshape(6,1), similar_img.reshape(6,1), np_residual, ano_score
+    return test_img.reshape(1,6), similar_img.reshape(1,6), np_residual, ano_score
 
 
 
@@ -125,9 +125,9 @@ n_test = X_test_standard.shape[0]
 m = range(n_test)  # X_test.shape[0]
 score = np.zeros((n_test, 1))
 # qurey = np.zeros((n_test, X_test_l, X_test_w, 1))
-qurey = np.zeros((n_test, X_test_l, 1))
-pred = np.zeros((n_test, X_test_l, 1))
-diff = np.zeros((n_test, X_test_l, 1))
+qurey = np.zeros((n_test, 6))
+pred = np.zeros((n_test, 6))
+diff = np.zeros((n_test, 6))
 for i in range(10):
     # img_idx = args.img_idx
     # label_idx = args.label_idx

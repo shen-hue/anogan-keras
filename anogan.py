@@ -1,9 +1,9 @@
 from __future__ import print_function
 from keras.models import Sequential, Model
-from keras.layers import Input, Reshape, Dense, Dropout, MaxPooling2D, Conv2D, Flatten, Bidirectional
-from keras.layers import Conv2DTranspose, LeakyReLU,LSTM, TimeDistributed, RepeatVector
+from keras.layers import Input, Reshape, Dense, Dropout, MaxPooling2D, Conv2D, Flatten
+from keras.layers import Conv2DTranspose, LeakyReLU
 from keras.layers.core import Activation
-from keras.layers import BatchNormalization, Lambda
+from keras.layers import BatchNormalization
 from tensorflow.keras.optimizers import Adam,RMSprop
 from keras import backend as K
 from keras.utils.vis_utils import plot_model
@@ -15,7 +15,6 @@ import cv2
 import math
 from keras import backend as K
 from functools import partial
-import pandas as pd
 
 from keras.utils. generic_utils import Progbar
 
@@ -56,74 +55,52 @@ def gradient_penalty_loss(y_true, y_pred, averaged_samples, gradient_penalty_wei
     gradient_penalty = gradient_penalty_weight * K.square(1 - gradient_l2_norm)
     return K.mean(gradient_penalty)
 
+# ### simple NNmodel(WGAN-GP)
+# class RandomWeightedAverage(_Merge):
+#     def _merge_function(self, inputs,BATCH_SIZE):
+#         weights = K.random_uniform((BATCH_SIZE, 1, 1, 1))
+#         return (weights * inputs[0]) + ((1 - weights) * inputs[1])
 
 
 ### generator model define
 def generator_model():
     ### simple NN model
-    # inputs = Input((10,))
-    # fc1 = Dense(256, input_dim=10)(inputs)
-    # fc1 = Activation('relu')(fc1)
-    # # fc1 = BatchNormalization(momentum=0.8)(fc1)
-    # fc2 = Dense(512)(fc1)
-    # fc2 = Activation('relu')(fc2)
-    # # fc2 = BatchNormalization(momentum=0.8)(fc2)
-    # fc3 = Dense(1024)(fc2)
-    # fc3 = Activation('relu')(fc3)
-    # # fc3 = BatchNormalization(momentum=0.8)(fc3)
-    # outputs = Dense(6)(fc3)
-    # # outputs = Activation('relu')(fc4)
-    # # outputs = Reshape(X_train.shape[1])(fc4)
-
-    ### LSTM model
-    inputs = Input((6,1,))
-    # fc1 = Dense(input_dim=10, units=6 * 10)(inputs)
-    # fc1 = BatchNormalization()(fc1)
-    # fc1 = LeakyReLU(0.2)(fc1)
-    # fc1 = Reshape((6, 10))(fc1)
-    # fc1 = RepeatVector(6)(inputs)
-    lstm1 = LSTM(8, activation='tanh', return_sequences=True)(inputs)
-    lstm2 = LSTM(4, activation='tanh', return_sequences=True)(lstm1)
-    lstm3 = LSTM(1, activation='tanh', return_sequences=True)(lstm2)
-    # def norm2(result):
-    #     ill = TimeDistributed(Dense(1)(result))
-    #     return ill
-    # timedis = Lambda(norm2)(lstm3)
-    d = Dense(units=1)(lstm3)
-    outputs = Activation('tanh')(d)
-
+    inputs = Input((6,))
+    fc1 = Dense(256, input_dim=6)(inputs)
+    fc1 = Activation('relu')(fc1)
+    # fc1 = BatchNormalization(momentum=0.8)(fc1)
+    fc2 = Dense(512)(fc1)
+    fc2 = Activation('relu')(fc2)
+    # fc2 = BatchNormalization(momentum=0.8)(fc2)
+    fc3 = Dense(1024)(fc2)
+    fc3 = Activation('relu')(fc3)
+    # fc3 = BatchNormalization(momentum=0.8)(fc3)
+    outputs = Dense(6)(fc3)
+    # outputs = Activation('relu')(fc4)
+    # outputs = Reshape(X_train.shape[1])(fc4)
+    
     model = Model(inputs=[inputs], outputs=[outputs])
-    # model.summary()
     return model
 
 ### discriminator model define
 def discriminator_model():
     ### simple NN model
-    # inputs = Input((6,))
-    # # fc1 = Flatten(input_shape=X_train.shape[1])(inputs)
-    # fc1 = Dense(512, input_dim=6)(inputs)
-    # fc1 = Activation('relu')(fc1)
-    # fc2 = Dense(256)(fc1)
-    # fc2 = LeakyReLU(0.2)(fc2)
-    # outputs = Dense(1)(fc2)
-    # # fc3 = Dense(1)(fc2)         # not for simple NN model(WGAN-GP)
-    # # outputs = Activation('sigmoid')(fc3)    # not for simple NN model(WGAN-GP)
-
-    ### LSTM model
-    inputs = Input((6,1,))
-    lstm1 = LSTM(8, return_sequences=True)(inputs)
-    lstm2 = LSTM(4, return_sequences=True)(lstm1)
-    fc1 = Dense(1)(lstm2)
-    fc2 = Flatten()(fc1)
-    fc3 = Dense(1)(fc2)
-    outputs = Activation('sigmoid')(fc3)
+    inputs = Input((6,))
+    # fc1 = Flatten(input_shape=X_train.shape[1])(inputs)
+    fc1 = Dense(512, input_dim=6)(inputs)
+    fc1 = Activation('relu')(fc1)
+    fc2 = Dense(256)(fc1)
+    fc2 = LeakyReLU(0.2)(fc2)
+    outputs = Dense(1)(fc2)
+    # fc3 = Dense(1)(fc2)         # not for simple NN model(WGAN-GP)
+    # outputs = Activation('sigmoid')(fc3)    # not for simple NN model(WGAN-GP)
     model = Model(inputs=[inputs], outputs=[outputs])
     return model
 
 ### d_on_g model for training generator
 def generator_containing_discriminator(g, d):
     d.trainable = False
-    ganInput = Input(shape=(6,1,))
+    ganInput = Input(shape=(6,))
     x = g(ganInput)
     ganOutput = d(x)
     gan = Model(inputs=ganInput, outputs=ganOutput)
@@ -133,8 +110,8 @@ def generator_containing_discriminator(g, d):
 def load_model():
     d = discriminator_model()
     g = generator_model()
-    d_optim = Adam()
-    g_optim = Adam()
+    d_optim = RMSprop()
+    g_optim = RMSprop(lr=0.0002)
     g.compile(loss='binary_crossentropy', optimizer=g_optim)
     d.compile(loss='binary_crossentropy', optimizer=d_optim)
     d.load_weights('./weights/discriminator.h5')
@@ -148,23 +125,22 @@ def train(BATCH_SIZE, X_train):
     d = discriminator_model()
     g = generator_model()
     d_on_g = generator_containing_discriminator(g, d)
-    d_optim = RMSprop(lr=0.001)
-    g_optim = RMSprop(lr=0.001)
-    g.compile(loss='binary_crossentropy', optimizer=g_optim)
-    d_on_g.compile(loss='binary_crossentropy', optimizer=g_optim)
+    d_optim = RMSprop(lr=0.0004)
+    g_optim = RMSprop(lr=0.0002)
+    g.compile(loss='mse', optimizer=g_optim)
+    d_on_g.compile(loss='mse', optimizer=g_optim)
     d.trainable = True
-    d.compile(loss='binary_crossentropy', optimizer=d_optim)
+    d.compile(loss='mse', optimizer=d_optim)
     
 
-    for epoch in range(250):
+    for epoch in range(500):
         print ("Epoch is", epoch)
         n_iter = int(X_train.shape[0]/BATCH_SIZE)
         progress_bar = Progbar(target=n_iter)
         
         for index in range(n_iter):
             # create random noise -> U(0,1) 10 latent vectors
-            noise = np.random.uniform(0, 1, size=(BATCH_SIZE, 6, 1))
-
+            noise = np.random.uniform(0, 1, size=(BATCH_SIZE, 6))
 
             # load real data & generate fake data
             image_batch = X_train[index*BATCH_SIZE:(index+1)*BATCH_SIZE]
@@ -178,7 +154,7 @@ def train(BATCH_SIZE, X_train):
 
             # attach label for training discriminator
             X = np.concatenate((image_batch, generated_images))
-            y = np.array([1] * BATCH_SIZE + [0] * BATCH_SIZE)     # 0 for simple NN model, -1 for simple NN model(WGAN-GP)
+            y = np.array([1] * BATCH_SIZE + [-1] * BATCH_SIZE)     # 0 for simple NN model, -1 for simple NN model(WGAN-GP)
             
             # training discriminator
             d_loss = d.train_on_batch(X, y)
@@ -201,7 +177,7 @@ def generate(BATCH_SIZE):
     g = generator_model()
     g.load_weights('weights/generator.h5')
     plot_model(g, to_file='model_g.png', show_shapes=True)
-    noise = np.random.uniform(0, 1, (BATCH_SIZE, 6, 1))
+    noise = np.random.uniform(0, 1, (BATCH_SIZE, 6))
     generated_images = g.predict(noise)
     return generated_images
 
@@ -226,16 +202,16 @@ def anomaly_detector(g=None, d=None):
         g.load_weights('weights/generator.h5')
     intermidiate_model = feature_extractor(d)
     intermidiate_model.trainable = False
-    # g = Model(inputs=g.layers[1].input, outputs=g.layers[-1].output)
+    g = Model(inputs=g.layers[1].input, outputs=g.layers[-1].output)
     g.trainable = False
     # Input layer cann't be trained. Add new layer as same size & same distribution
-    aInput = Input(shape=(6,1,))
-    # fc1 = Dense(512)(aInput)
-    # fc2 = Activation('relu')(fc1)
-    # fc3 = Dense(256)(fc2)
-    # fc4 = Activation('relu')(fc3)
-    gInput = Dense(1)(aInput)
-    # gInput = Activation('relu')(gInput)
+    aInput = Input(shape=(6,))
+    fc1 = Dense(512, input_dim=6)(aInput)
+    fc2 = Activation('relu')(fc1)
+    fc3 = Dense(256)(fc2)
+    fc4 = Activation('relu')(fc3)
+    gInput = Dense(6)(fc4)
+    gInput = Activation('sigmoid')(gInput)
     # aInput = Input(shape=(10,))
     # gInput = Dense((10), trainable=True)(aInput)
     # gInput = Activation('sigmoid')(gInput)
@@ -243,18 +219,17 @@ def anomaly_detector(g=None, d=None):
     # G & D feature
     G_out = g(gInput)
     # D_out= intermidiate_model(G_out)
-    model = Model(inputs=[aInput], outputs=[G_out])
+    model = Model(inputs=aInput, outputs=G_out)
     # model.compile(optimizer='rmsprop',loss='mse')
-    model.compile(loss=sum_of_residual, optimizer='adam')
+    model.compile(loss=sum_of_residual, loss_weights= [0.90, 0.10], optimizer='rmsprop')
     # batchnorm learning phase fixed (test) : make non trainable
     K.set_learning_phase(0)
-    # model.summary()
     
     return model
 
 ### anomaly detection
-def compute_anomaly_score(model, x, iterations=50, d=None):
-    z = np.random.uniform(0, 1, size=(1, 6,1))
+def compute_anomaly_score(model, x, iterations=500, d=None):
+    z = np.random.uniform(0, 1, size=(1, 6))
     
     intermidiate_model = feature_extractor(d)
     d_x = intermidiate_model.predict(x)
