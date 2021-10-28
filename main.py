@@ -14,7 +14,6 @@ import argparse
 import anogan
 import keras
 import pandas as pd
-from load_data import sine_data_generation, anomaly_sine_data_generation
 from sklearn.datasets import make_blobs,make_moons
 from scipy.io import loadmat
 
@@ -31,7 +30,7 @@ args = parser.parse_args()
 
 
 ### 0.2 load cluster data
-n_samples = 1000
+n_samples = 300
 outliers_fraction = 0.15
 n_outliers = int(outliers_fraction * n_samples)   # anomaly data
 n_inliers = n_samples - n_outliers                # normal data
@@ -97,14 +96,14 @@ generated_img = anogan.generate(25)
 
 def anomaly_detection(test_img, g=None, d=None):
     model = anogan.anomaly_detector(g=g, d=d)
-    # ano_score, similar_img = anogan.compute_anomaly_score(model, test_img.reshape(1, 2), iterations=500, d=d)
+    ano_score, similar_img = anogan.compute_anomaly_score(model, test_img.reshape(1,-1,1), iterations=500, d=d)
     ### only for simple model credit fraud
-    ano_score = model.fit(test_img.reshape(1,-1,1),test_img.reshape(1,-1,1),epochs=50,batch_size=1)
-    ano_score = ano_score.history['loss'][-1]
-    plot_model(model, to_file='anomaly_detector.png', show_shapes=True, show_layer_names=True)
-    model.save_weights('result_high_d_LSTM/100.h5',True)
-    model.load_weights('result_high_d_LSTM/100.h5')
-    similar_img = model.predict(test_img.reshape(1,-1,1))
+    # ano_score = model.fit(test_img.reshape(1,-1,1),test_img.reshape(1,-1,1),epochs=50,batch_size=1)
+    # ano_score = ano_score.history['loss'][-1]
+    # plot_model(model, to_file='anomaly_detector.png', show_shapes=True, show_layer_names=True)
+    # model.save_weights('result_artificial/299.h5',True)
+    # model.load_weights('result_artificial/299.h5')
+    # similar_img = model.predict(test_img.reshape(1,-1,1))
     similar_img = similar_img*(np.max(X_test)-np.min(X_test))+np.min(X_test)
 
 
@@ -129,7 +128,7 @@ score = np.zeros((n_test, 1))
 qurey = np.zeros((n_test, X_test_l, 1))
 pred = np.zeros((n_test, X_test_l, 1))
 diff = np.zeros((n_test, X_test_l, 1))
-for i in m:
+for i in range(10):
     # img_idx = args.img_idx
     # label_idx = args.label_idx
     test_img = X_test_standard[i]
@@ -141,11 +140,11 @@ for i in m:
     # print ('%d label, %d : done'%(label_idx, img_idx), '%.2f'%score, '%.2fms'%time)
     print("number: ", i, "score:", score[i])
 #
-np.save('result_high_d_LSTM/test_qurey', qurey)
-np.save('result_high_d_LSTM/test_pred', pred)
-np.save('result_high_d_LSTM/test_diff', diff)
-np.save('result_high_d_LSTM/test_score', score)
-np.save('result_high_d_LSTM/X_test', X_test)
-np.save('result_high_d_LSTM/y_test', y_test)
-np.save('result_high_d_LSTM/X_train', X_train)
-np.save('result_high_d_LSTM/y_train', y_train)
+np.save('result_artificial/test_qurey', qurey)
+np.save('result_artificial/test_pred', pred)
+np.save('result_artificial/test_diff', diff)
+np.save('result_artificial/test_score', score)
+np.save('result_artificial/X_test', X_test)
+np.save('result_artificial/y_test', y_test)
+np.save('result_artificial/X_train', X_train)
+np.save('result_artificial/y_train', y_train)

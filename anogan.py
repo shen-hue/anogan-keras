@@ -82,15 +82,15 @@ def generator_model():
     # fc1 = LeakyReLU(0.2)(fc1)
     # fc1 = Reshape((6, 10))(fc1)
     # fc1 = RepeatVector(6)(inputs)
-    lstm1 = LSTM(128,activation='relu', return_sequences=True)(inputs)
-    lstm2 = LSTM(64, activation='relu', return_sequences=True)(lstm1)
+    lstm1 = LSTM(8, activation='tanh', return_sequences=True)(inputs)
+    lstm2 = LSTM(4, activation='tanh', return_sequences=True)(lstm1)
+    lstm3 = LSTM(1, activation='tanh', return_sequences=True)(lstm2)
     # def norm2(result):
     #     ill = TimeDistributed(Dense(1)(result))
     #     return ill
     # timedis = Lambda(norm2)(lstm3)
-    # lstm3 = LSTM(128, return_sequences=True)(lstm2)
-    outputs = Dense(units=1)(lstm2)
-    # outputs = Activation('relu')(out)
+    d = Dense(units=1)(lstm3)
+    outputs = Activation('tanh')(d)
 
     model = Model(inputs=[inputs], outputs=[outputs])
     # model.summary()
@@ -111,8 +111,8 @@ def discriminator_model():
 
     ### LSTM model
     inputs = Input((6,1,))
-    lstm1 = LSTM(128, return_sequences=True)(inputs)
-    lstm2 = LSTM(64, return_sequences=True)(lstm1)
+    lstm1 = LSTM(8, return_sequences=True)(inputs)
+    lstm2 = LSTM(4, return_sequences=True)(lstm1)
     fc1 = Dense(1)(lstm2)
     fc2 = Flatten()(fc1)
     fc3 = Dense(1)(fc2)
@@ -135,7 +135,7 @@ def load_model():
     g = generator_model()
     d_optim = Adam()
     g_optim = Adam()
-    g.compile(loss='mse', optimizer=g_optim)
+    g.compile(loss='binary_crossentropy', optimizer=g_optim)
     d.compile(loss='binary_crossentropy', optimizer=d_optim)
     d.load_weights('./weights/discriminator.h5')
     g.load_weights('./weights/generator.h5')
@@ -148,12 +148,12 @@ def train(BATCH_SIZE, X_train):
     d = discriminator_model()
     g = generator_model()
     d_on_g = generator_containing_discriminator(g, d)
-    d_optim = RMSprop(lr=0.0004)
-    g_optim = RMSprop(lr=0.0002)
-    g.compile(loss='mse', optimizer=g_optim)
-    d_on_g.compile(loss='mse', optimizer=g_optim)
+    d_optim = RMSprop(lr=0.001)
+    g_optim = RMSprop(lr=0.001)
+    g.compile(loss='binary_crossentropy', optimizer=g_optim)
+    d_on_g.compile(loss='binary_crossentropy', optimizer=g_optim)
     d.trainable = True
-    d.compile(loss='mse', optimizer=d_optim)
+    d.compile(loss='binary_crossentropy', optimizer=d_optim)
     
 
     for epoch in range(250):
@@ -178,7 +178,7 @@ def train(BATCH_SIZE, X_train):
 
             # attach label for training discriminator
             X = np.concatenate((image_batch, generated_images))
-            y = np.array([1] * BATCH_SIZE + [-1] * BATCH_SIZE)     # 0 for simple NN model, -1 for simple NN model(WGAN-GP)
+            y = np.array([1] * BATCH_SIZE + [0] * BATCH_SIZE)     # 0 for simple NN model, -1 for simple NN model(WGAN-GP)
             
             # training discriminator
             d_loss = d.train_on_batch(X, y)
@@ -235,7 +235,7 @@ def anomaly_detector(g=None, d=None):
     # fc3 = Dense(256)(fc2)
     # fc4 = Activation('relu')(fc3)
     gInput = Dense(1)(aInput)
-    gInput = Activation('relu')(gInput)
+    # gInput = Activation('relu')(gInput)
     # aInput = Input(shape=(10,))
     # gInput = Dense((10), trainable=True)(aInput)
     # gInput = Activation('sigmoid')(gInput)
@@ -245,7 +245,7 @@ def anomaly_detector(g=None, d=None):
     # D_out= intermidiate_model(G_out)
     model = Model(inputs=[aInput], outputs=[G_out])
     # model.compile(optimizer='rmsprop',loss='mse')
-    model.compile(loss=sum_of_residual, loss_weights= [0.90, 0.10], optimizer='rmsprop')
+    model.compile(loss=sum_of_residual, optimizer='adam')
     # batchnorm learning phase fixed (test) : make non trainable
     K.set_learning_phase(0)
     # model.summary()
@@ -253,15 +253,15 @@ def anomaly_detector(g=None, d=None):
     return model
 
 ### anomaly detection
-def compute_anomaly_score(model, x, iterations=500, d=None):
-    z = np.random.uniform(0, 1, size=(1, 10))
+def compute_anomaly_score(model, x, iterations=50, d=None):
+    z = np.random.uniform(0, 1, size=(1, 6,1))
     
     intermidiate_model = feature_extractor(d)
     d_x = intermidiate_model.predict(x)
 
     # learning for changing latent
-    loss = model.fit(z, [x, d_x], batch_size=1, epochs=iterations, verbose=1)
-    similar_data, _ = model.predict(z)
+    loss = model.fit(z, x, batch_size=1, epochs=iterations, verbose=1)
+    similar_data = model.predict(z)
     loss = loss.history['loss'][-1]
     
     return loss, similar_data
