@@ -91,9 +91,9 @@ def discriminator_model():
     fc1 = Activation('relu')(fc1)
     fc2 = Dense(256)(fc1)
     fc2 = LeakyReLU(0.2)(fc2)
-    outputs = Dense(1)(fc2)
-    # fc3 = Dense(1)(fc2)         # not for simple NN model(WGAN-GP)
-    # outputs = Activation('sigmoid')(fc3)    # not for simple NN model(WGAN-GP)
+    # outputs = Dense(1)(fc2)
+    fc3 = Dense(1)(fc2)         # not for simple NN model(WGAN-GP)
+    outputs = Activation('sigmoid')(fc3)    # not for simple NN model(WGAN-GP)
     model = Model(inputs=[inputs], outputs=[outputs])
     return model
 

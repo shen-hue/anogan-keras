@@ -46,7 +46,7 @@ datasets = [
           np.array([0.5, 0.25])),
     14. * (np.random.RandomState(42).rand(n_samples, 2) - 0.5)]
 
-X = datasets[4]
+X = datasets[0]
 rng = np.random.RandomState(42)
 X_test = np.concatenate([X, rng.uniform(low=-6, high=6,
                                         size=(n_outliers, 2))], axis=0)
@@ -60,7 +60,7 @@ X_test = np.concatenate([X, rng.uniform(low=-6, high=6,
 
 y_train = np.asarray([0]*n_inliers)
 X_test_l = X_test.shape[1]
-y_test = np.concatenate([[0]*n_samples,[1]*n_outliers],axis=0)
+y_test = np.concatenate([[0]*n_inliers,[1]*n_outliers],axis=0)
 
 ### 0.3 normalize the data(not use)
 X_train = (X-np.min(X))/(np.max(X)-np.min(X))
@@ -119,7 +119,7 @@ diff = np.zeros((n_test, X_test_l, 1))
 # train the encode on test data
 model = anogan.anomaly_detector(g=None, d=None)
 ano_score = model.fit(X_test_standard,X_test_standard,epochs=500,batch_size=1)
-model.save_weights('weights/5_encode.h5', True)
+model.save_weights('weights/1_encode.h5', True)
 
 
 for i in m:
@@ -134,11 +134,11 @@ for i in m:
     # print ('%d label, %d : done'%(label_idx, img_idx), '%.2f'%score, '%.2fms'%time)
     print("number: ", i, "score:", score[i])
 
-np.save('result_cluster_5/test_qurey', qurey)
-np.save('result_cluster_5/test_pred', pred)
-np.save('result_cluster_5/test_diff', diff)
-np.save('result_cluster_5/test_score', score)
-np.save('result_cluster_5/X_test', X_test)
-np.save('result_cluster_5/y_test', y_test)
-np.save('result_cluster_5/X_train', X)
-np.save('result_cluster_5/y_train', y_train)
+np.save('result_cluster_1/test_qurey', qurey)
+np.save('result_cluster_1/test_pred', pred)
+np.save('result_cluster_1/test_diff', diff)
+np.save('result_cluster_1/test_score', score)
+np.save('result_cluster_1/X_test', X_test)
+np.save('result_cluster_1/y_test', y_test)
+np.save('result_cluster_1/X_train', X)
+np.save('result_cluster_1/y_train', y_train)
