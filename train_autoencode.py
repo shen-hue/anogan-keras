@@ -44,7 +44,7 @@ def autoencoder(X_train, X_test):
 
 
 def main():
-    n_samples = 1000000
+    n_samples = 300
     outliers_fraction = 0.15
     n_outliers = int(outliers_fraction * n_samples)  # anomaly data
     n_inliers = n_samples - n_outliers  # normal data
