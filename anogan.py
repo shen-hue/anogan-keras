@@ -1,22 +1,25 @@
 from __future__ import print_function
-from keras.models import Sequential, Model
-from keras.layers import Input, Reshape, Dense, Dropout, MaxPooling2D, Conv2D, Flatten
-from keras.layers import Conv2DTranspose, LeakyReLU
-from keras.layers.core import Activation
-from keras.layers import BatchNormalization
+from tensorflow.keras.models import Sequential, Model
+from tensorflow.keras.layers import Input, Reshape, Dense, Dropout, MaxPooling2D, Conv2D, Flatten
+from tensorflow.keras.layers import Conv2DTranspose, LeakyReLU
+# from tensorflow.keras.layers.core import Activation
+from tensorflow.keras.layers import Activation
+from tensorflow.keras.layers import BatchNormalization
 from tensorflow.keras.optimizers import Adam,RMSprop
-from keras import backend as K
-from keras.utils.vis_utils import plot_model
-from keras import initializers
+from tensorflow.keras import backend as K
+# from tensorflow.keras.utils.vis_utils import plot_model
+from tensorflow.keras.utils import plot_model
+from tensorflow.keras import initializers
 import tensorflow as tf
 import numpy as np
 # from tqdm import tqdm
 import cv2
 import math
-from keras import backend as K
+from tensorflow.keras import backend as K
 from functools import partial
 
-from keras.utils. generic_utils import Progbar
+# from tensorflow.keras.utils.generic_utils import Progbar
+from tensorflow.keras.utils import Progbar
 
 ### combine images for visualization
 # def combine_images(generated_images):
@@ -154,14 +157,14 @@ def train(BATCH_SIZE, X_train):
 
             # attach label for training discriminator
             X = np.concatenate((image_batch, generated_images))
-            y = np.array([1] * BATCH_SIZE + [-1] * BATCH_SIZE)     # 0 for simple NN model, -1 for simple NN model(WGAN-GP)
+            y = np.array([0] * BATCH_SIZE + [1] * BATCH_SIZE)     # 0 for simple NN model, -1 for simple NN model(WGAN-GP)
             
             # training discriminator
             d_loss = d.train_on_batch(X, y)
 
             # training generator
             d.trainable = False
-            g_loss = d_on_g.train_on_batch(noise, np.array([1] * BATCH_SIZE))
+            g_loss = d_on_g.train_on_batch(noise, np.array([0] * BATCH_SIZE))
             d.trainable = True
 
             progress_bar.update(index, values=[('g',g_loss), ('d',d_loss)])
@@ -219,7 +222,7 @@ def anomaly_detector(g=None, d=None):
     # G & D feature
     G_out = g(gInput)
     # D_out= intermidiate_model(G_out)
-    model = Model(inputs=aInput, outputs=G_out)
+    model = Model(inputs=[aInput], outputs=[G_out])
     # model.compile(optimizer='rmsprop',loss='mse')
     model.compile(loss=sum_of_residual, loss_weights= [0.90, 0.10], optimizer='rmsprop')
     # batchnorm learning phase fixed (test) : make non trainable

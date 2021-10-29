@@ -4,9 +4,11 @@ import shap
 import anogan
 
 n=6
-test = np.load('result_artificial/test_qurey.npy').reshape(-1,n)
+X_test = np.load('result_artificial/test_qurey.npy').reshape(-1,n)
+test = (X_test-np.min(X_test))/(np.max(X_test)-np.min(X_test))
 # test = pd.DataFrame(data=test,index=range(len(test)),columns=range(2))
 test_pred = np.load('result_artificial/test_pred.npy').reshape(-1,n)
+test_pred = (test_pred-np.min(X_test))/(np.max(X_test)-np.min(X_test))
 rec_err = np.linalg.norm(test-test_pred, axis=1)
 # idx = list(rec_err).index(max(rec_err))
 result = pd.DataFrame(data=None,index=range(len(test)),columns=['shapvalue'])
@@ -22,10 +24,10 @@ for j in range(len(test)):
         return df
 
 
-    top_5_features = sort_by_absolute(df, idx).iloc[:5,:]
+    top_5_features = sort_by_absolute(df, idx).iloc[:6,:]
     # data_summary = test[idx].reshape(1,test.shape[1])
     # data_summary = data_summary.repeat(10,axis=0)
-    data_summary = shap.kmeans(test, 100)
+    data_summary = shap.kmeans(test[:250,:], 100)
 
     shaptop5features = pd.DataFrame(data=None)
     shap_value_ordered = np.zeros((n, n))

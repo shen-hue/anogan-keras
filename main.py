@@ -128,7 +128,7 @@ score = np.zeros((n_test, 1))
 qurey = np.zeros((n_test, 6))
 pred = np.zeros((n_test, 6))
 diff = np.zeros((n_test, 6))
-for i in m:
+for i in [10]:
     # img_idx = args.img_idx
     # label_idx = args.label_idx
     test_img = X_test_standard[i]
@@ -140,11 +140,11 @@ for i in m:
     # print ('%d label, %d : done'%(label_idx, img_idx), '%.2f'%score, '%.2fms'%time)
     print("number: ", i, "score:", score[i])
 #
-np.save('result_artificial/test_qurey', qurey)
-np.save('result_artificial/test_pred', pred)
-np.save('result_artificial/test_diff', diff)
-np.save('result_artificial/test_score', score)
-np.save('result_artificial/X_test', X_test)
-np.save('result_artificial/y_test', y_test)
-np.save('result_artificial/X_train', X_train)
-np.save('result_artificial/y_train', y_train)
+# np.save('result_artificial/test_qurey', qurey)
+# np.save('result_artificial/test_pred', pred)
+# np.save('result_artificial/test_diff', diff)
+# np.save('result_artificial/test_score', score)
+# np.save('result_artificial/X_test', X_test)
+# np.save('result_artificial/y_test', y_test)
+# np.save('result_artificial/X_train', X_train)
+# np.save('result_artificial/y_train', y_train)
