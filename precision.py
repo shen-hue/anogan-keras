@@ -15,7 +15,7 @@ diff = diff.reshape(-1,6)
 diff = np.sum(abs(diff), axis=1)
 
 
-threshold = 1.5
+threshold = 0.1
 
 # order prediction result(anomaly:1, normal:0)
 score = score.flatten()

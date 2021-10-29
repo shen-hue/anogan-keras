@@ -94,15 +94,15 @@ generated_img = anogan.generate(25)
 
 ### 3. other class anomaly detection
 
-def anomaly_detection(test_img, g=None, d=None):
+def anomaly_detection(test_img,j, g=None, d=None):
     model = anogan.anomaly_detector(g=g, d=d)
     # ano_score, similar_img = anogan.compute_anomaly_score(model, test_img.reshape(1,-1), iterations=500, d=d)
     ### only for simple model credit fraud
     ano_score = model.fit(test_img.reshape(1,-1),test_img.reshape(1,-1),epochs=500,batch_size=1)
     ano_score = ano_score.history['loss'][-1]
     # plot_model(model, to_file='anomaly_detector.png', show_shapes=True, show_layer_names=True)
-    model.save_weights('result_artificial/299.h5',True)
-    model.load_weights('result_artificial/299.h5')
+    model.save_weights('result_artificial/weights/test_1_'+str(j)+'.h5',True)
+    model.load_weights('result_artificial/weights/test_1_'+str(j)+'.h5')
     similar_img = model.predict(test_img.reshape(1,-1))
     similar_img = similar_img*(np.max(X_test)-np.min(X_test))+np.min(X_test)
 
@@ -128,14 +128,14 @@ score = np.zeros((n_test, 1))
 qurey = np.zeros((n_test, 6))
 pred = np.zeros((n_test, 6))
 diff = np.zeros((n_test, 6))
-for i in range(10):
+for i in m:
     # img_idx = args.img_idx
     # label_idx = args.label_idx
     test_img = X_test_standard[i]
     # test_img = np.random.uniform(-1,1, (28,28,1))
 
     start = cv2.getTickCount()
-    qurey[i], pred[i], diff[i], score[i] = anomaly_detection(test_img)
+    qurey[i], pred[i], diff[i], score[i] = anomaly_detection(test_img,i)
     time = (cv2.getTickCount() - start) / cv2.getTickFrequency() * 1000
     # print ('%d label, %d : done'%(label_idx, img_idx), '%.2f'%score, '%.2fms'%time)
     print("number: ", i, "score:", score[i])
