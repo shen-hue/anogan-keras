@@ -2,52 +2,21 @@ from __future__ import print_function
 from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.layers import Input, Reshape, Dense, Dropout, MaxPooling2D, Conv2D, Flatten
 from tensorflow.keras.layers import Conv2DTranspose, LeakyReLU
-# from tensorflow.keras.layers.core import Activation
 from tensorflow.keras.layers import Activation
 from tensorflow.keras.layers import BatchNormalization
 from tensorflow.keras.optimizers import Adam,RMSprop
 from tensorflow.keras import backend as K
-# from tensorflow.keras.utils.vis_utils import plot_model
 from tensorflow.keras.utils import plot_model
 from tensorflow.keras import initializers
 import tensorflow as tf
 import numpy as np
-# from tqdm import tqdm
 import cv2
 import math
 from tensorflow.keras import backend as K
 from functools import partial
-
-# from tensorflow.keras.utils.generic_utils import Progbar
 from tensorflow.keras.utils import Progbar
 
-### combine images for visualization
-# def combine_images(generated_images):
-#     num = generated_images.shape[0]
-#     width = int(math.sqrt(num))
-#     height = int(math.ceil(float(num)/width))
-#     shape = generated_images.shape[1:4]
-#     ### CNN model
-#     # image = np.zeros((height*shape[0], width*shape[1], shape[2]),
-#     #                  dtype=generated_images.dtype)
-#     # for index, img in enumerate(generated_images):
-#     #     i = int(index/width)
-#     #     j = index % width
-#     #     image[i*shape[0]:(i+1)*shape[0], j*shape[1]:(j+1)*shape[1],:] = img[:, :, :]
-#
-#     ### simple NN model
-#     image = np.zeros((height*shape[0], width*shape[1], shape[2]),
-#                      dtype=generated_images.dtype)
-#     for index, img in enumerate(generated_images):
-#         i = int(index/width)
-#         j = index % width
-#         image[i*shape[0]:(i+1)*shape[0], j*shape[1]:(j+1)*shape[1],:] = img[:, :, :]
-#
-#     return image
 
-### simple NNmodel(WGAN-GP)
-def wassersterin_loss(y_true, y_pred):
-    return K.mean(y_true*y_pred)
 
 ### simple NNmodel(WGAN-GP)
 def gradient_penalty_loss(y_true, y_pred, averaged_samples, gradient_penalty_weight):
@@ -58,56 +27,40 @@ def gradient_penalty_loss(y_true, y_pred, averaged_samples, gradient_penalty_wei
     gradient_penalty = gradient_penalty_weight * K.square(1 - gradient_l2_norm)
     return K.mean(gradient_penalty)
 
-# ### simple NNmodel(WGAN-GP)
-# class RandomWeightedAverage(_Merge):
-#     def _merge_function(self, inputs,BATCH_SIZE):
-#         weights = K.random_uniform((BATCH_SIZE, 1, 1, 1))
-#         return (weights * inputs[0]) + ((1 - weights) * inputs[1])
-
 
 ### generator model define
 def generator_model():
-    ### simple NN model
     inputs = Input((6,))
     fc1 = Dense(256, input_dim=6)(inputs)
     fc1 = Activation('relu')(fc1)
-    # fc1 = BatchNormalization(momentum=0.8)(fc1)
     fc2 = Dense(512)(fc1)
     fc2 = Activation('relu')(fc2)
-    # fc2 = BatchNormalization(momentum=0.8)(fc2)
     fc3 = Dense(1024)(fc2)
     fc3 = Activation('relu')(fc3)
-    # fc3 = BatchNormalization(momentum=0.8)(fc3)
     outputs = Dense(6)(fc3)
-    # outputs = Activation('relu')(fc4)
-    # outputs = Reshape(X_train.shape[1])(fc4)
-    
+
     model = Model(inputs=[inputs], outputs=[outputs])
     return model
 
 ### discriminator model define
 def discriminator_model():
-    ### simple NN model
     inputs = Input((6,))
-    # fc1 = Flatten(input_shape=X_train.shape[1])(inputs)
     fc1 = Dense(512, input_dim=6)(inputs)
     fc1 = Activation('relu')(fc1)
     fc2 = Dense(256)(fc1)
     fc2 = LeakyReLU(0.2)(fc2)
     outputs = Dense(1)(fc2)
-    # fc3 = Dense(1)(fc2)         # not for simple NN model(WGAN-GP)
-    # outputs = Activation('sigmoid')(fc3)    # not for simple NN model(WGAN-GP)
+
     model = Model(inputs=[inputs], outputs=[outputs])
     return model
 
-### d_on_g model for training generator
+### discriminator on generator model for training generator
 def generator_containing_discriminator(g, d):
     d.trainable = False
     ganInput = Input(shape=(6,))
     x = g(ganInput)
     ganOutput = d(x)
     gan = Model(inputs=ganInput, outputs=ganOutput)
-    # gan.compile(loss='binary_crossentropy', optimizer='adam')
     return gan
 
 def load_model():
@@ -142,18 +95,11 @@ def train(BATCH_SIZE, X_train):
         progress_bar = Progbar(target=n_iter)
         
         for index in range(n_iter):
-            # create random noise -> U(0,1) 10 latent vectors
             noise = np.random.uniform(0, 1, size=(BATCH_SIZE, 6))
 
             # load real data & generate fake data
             image_batch = X_train[index*BATCH_SIZE:(index+1)*BATCH_SIZE]
             generated_images = g.predict(noise, verbose=0)
-            
-            # visualize training results
-            # if index % 20 == 0:
-            #     image = combine_images(generated_images)
-            #     # image = image*127.5+127.5
-            #     cv2.imwrite('./result/'+str(epoch)+"_"+str(index)+".png", image)
 
             # attach label for training discriminator
             X = np.concatenate((image_batch, generated_images))
@@ -215,17 +161,11 @@ def anomaly_detector(g=None, d=None):
     fc4 = Activation('relu')(fc3)
     gInput = Dense(6)(fc4)
     gInput = Activation('sigmoid')(gInput)
-    # aInput = Input(shape=(10,))
-    # gInput = Dense((10), trainable=True)(aInput)
-    # gInput = Activation('sigmoid')(gInput)
     
     # G & D feature
     G_out = g(gInput)
-    # D_out= intermidiate_model(G_out)
     model = Model(inputs=[aInput], outputs=[G_out])
-    # model.compile(optimizer='rmsprop',loss='mse')
     model.compile(loss=sum_of_residual, loss_weights= [0.90, 0.10], optimizer='rmsprop')
-    # batchnorm learning phase fixed (test) : make non trainable
     K.set_learning_phase(0)
     
     return model

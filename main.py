@@ -29,33 +29,12 @@ args = parser.parse_args()
 ### 0. prepare data
 
 
-### 0.2 load cluster data
+### 0.1 load artificial data
 n_samples = 300
 outliers_fraction = 0.15
 n_outliers = int(outliers_fraction * n_samples)   # anomaly data
 n_inliers = n_samples - n_outliers                # normal data
-#
-# blobs_params = dict(random_state=0, n_samples=n_inliers, n_features=6)
-# datasets = [
-#     make_blobs(centers=[[0, 0,0,0,0,0], [0, 0,0,0,0,0]], cluster_std=0.5,
-#                **blobs_params)[0],
-#     make_blobs(centers=[[2, 2], [-2, -2]], cluster_std=[0.5, 0.5],
-#                **blobs_params)[0],
-#     make_blobs(centers=[[2, 2], [-2, -2]], cluster_std=[1.5, .3],
-#                **blobs_params)[0],
-#     4. * (make_moons(n_samples=n_samples, noise=.05, random_state=0)[0] -
-#           np.array([0.5, 0.25])),
-#     14. * (np.random.RandomState(42).rand(n_samples, 2) - 0.5)]
-#
-# X = datasets[0]
-# rng = np.random.RandomState(42)
-# X_test = np.concatenate([X, rng.uniform(low=-6, high=6,
-#                                         size=(n_outliers, 6))], axis=0)
-### change the feature importance
-# transformation = [[6, 0], [-6, 0]]
-# X = np.dot(X, transformation)
 
-### load artificial data
 np.random.seed(10)
 X = np.random.uniform(0,6,(n_inliers,4))
 X = np.insert(X,4,values=X[:,0]+X[:,1],axis=1)
@@ -67,13 +46,9 @@ y_train = np.asarray([0]*n_inliers)
 X_test_l = X_test.shape[1]
 y_test = np.concatenate([[0]*n_inliers,[1]*n_outliers],axis=0)
 
-### 0.3 normalize the data
+### 0.2 normalize the data
 X_train = (X-np.min(X))/(np.max(X)-np.min(X))
 X_test_standard = (X_test-np.min(X_test))/(np.max(X_test)-np.min(X_test))
-
-### 0.4 reshape the data(LSTM model)
-# X_train = X_train.reshape(-1,6,1)
-# X_test_standard = X_test_standard.reshape(-1,6,1)
 
 
 print('train shape:', X_train.shape)
@@ -84,67 +59,55 @@ if args.mode == 'train':
 
 ### 2. test generator
 generated_img = anogan.generate(25)
-# img = anogan.combine_images(generated_img)
-# # img = (img*127.5)+127.5
-# img = img.astype(np.uint8)
-# img = cv2.resize(img, None, fx=4, fy=4, interpolation=cv2.INTER_NEAREST)
 
 
 
 
-### 3. other class anomaly detection
+### 3. class anomaly detection
 
 def anomaly_detection(test_img,j, g=None, d=None):
     model = anogan.anomaly_detector(g=g, d=d)
-    # ano_score, similar_img = anogan.compute_anomaly_score(model, test_img.reshape(1,-1), iterations=500, d=d)
-    ### only for simple model credit fraud
     ano_score = model.fit(test_img.reshape(1,-1),test_img.reshape(1,-1),epochs=500,batch_size=1)
     ano_score = ano_score.history['loss'][-1]
-    # plot_model(model, to_file='anomaly_detector.png', show_shapes=True, show_layer_names=True)
     model.save_weights('result_artificial/weights/test_1_'+str(j)+'.h5',True)
     model.load_weights('result_artificial/weights/test_1_'+str(j)+'.h5')
     similar_img = model.predict(test_img.reshape(1,-1))
     similar_img = similar_img*(np.max(X_test)-np.min(X_test))+np.min(X_test)
 
 
-    ### only for simple model credit fraud
     test_img = test_img*(np.max(X_test)-np.min(X_test))+np.min(X_test)
     np_residual = test_img.reshape(1,6) - similar_img.reshape(1,6)
 
-    # np_residual = (np_residual + 2)/4
 
     return test_img.reshape(1,6), similar_img.reshape(1,6), np_residual, ano_score
 
 
 
-### compute anomaly score - sample from strange image
-########### change!!!
+### compute anomaly score
 
 
 n_test = X_test_standard.shape[0]
 m = range(n_test)  # X_test.shape[0]
 score = np.zeros((n_test, 1))
-# qurey = np.zeros((n_test, X_test_l, X_test_w, 1))
 qurey = np.zeros((n_test, 6))
 pred = np.zeros((n_test, 6))
 diff = np.zeros((n_test, 6))
 for i in [10]:
-    # img_idx = args.img_idx
-    # label_idx = args.label_idx
     test_img = X_test_standard[i]
-    # test_img = np.random.uniform(-1,1, (28,28,1))
-
     start = cv2.getTickCount()
     qurey[i], pred[i], diff[i], score[i] = anomaly_detection(test_img,i)
     time = (cv2.getTickCount() - start) / cv2.getTickFrequency() * 1000
     # print ('%d label, %d : done'%(label_idx, img_idx), '%.2f'%score, '%.2fms'%time)
     print("number: ", i, "score:", score[i])
-#
-# np.save('result_artificial/test_qurey', qurey)
-# np.save('result_artificial/test_pred', pred)
-# np.save('result_artificial/test_diff', diff)
-# np.save('result_artificial/test_score', score)
-# np.save('result_artificial/X_test', X_test)
-# np.save('result_artificial/y_test', y_test)
-# np.save('result_artificial/X_train', X_train)
-# np.save('result_artificial/y_train', y_train)
+
+# save results
+if os.path.exists('result_artificial')==False:
+    os.mkdir('result_artificial')
+np.save('result_artificial/test_qurey', qurey)
+np.save('result_artificial/test_pred', pred)
+np.save('result_artificial/test_diff', diff)
+np.save('result_artificial/test_score', score)
+np.save('result_artificial/X_test', X_test)
+np.save('result_artificial/y_test', y_test)
+np.save('result_artificial/X_train', X_train)
+np.save('result_artificial/y_train', y_train)
