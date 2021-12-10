@@ -83,7 +83,7 @@ def anomaly_detection(test_img,j, g=None, d=None):
 
 
 
-### compute anomaly score
+### 4 compute anomaly score
 
 
 n_test = X_test_standard.shape[0]
