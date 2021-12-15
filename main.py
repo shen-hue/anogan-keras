@@ -1,21 +1,14 @@
 from __future__ import print_function
 
 import matplotlib
-from keras.utils.vis_utils import plot_model
 
 matplotlib.use('PDF')
 
 import os
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
-from keras.datasets import mnist
 import argparse
 import anogan
-import keras
-import pandas as pd
-from sklearn.datasets import make_blobs,make_moons
-from scipy.io import loadmat
 
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -101,13 +94,13 @@ for i in [10]:
     print("number: ", i, "score:", score[i])
 
 # save results
-if os.path.exists('result_artificial')==False:
-    os.mkdir('result_artificial')
-np.save('result_artificial/test_qurey', qurey)
-np.save('result_artificial/test_pred', pred)
-np.save('result_artificial/test_diff', diff)
-np.save('result_artificial/test_score', score)
-np.save('result_artificial/X_test', X_test)
-np.save('result_artificial/y_test', y_test)
-np.save('result_artificial/X_train', X_train)
-np.save('result_artificial/y_train', y_train)
+# if os.path.exists('result_artificial')==False:
+#     os.mkdir('result_artificial')
+# np.save('result_artificial/test_qurey', qurey)
+# np.save('result_artificial/test_pred', pred)
+# np.save('result_artificial/test_diff', diff)
+# np.save('result_artificial/test_score', score)
+# np.save('result_artificial/X_test', X_test)
+# np.save('result_artificial/y_test', y_test)
+# np.save('result_artificial/X_train', X_train)
+# np.save('result_artificial/y_train', y_train)
