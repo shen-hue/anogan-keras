@@ -93,14 +93,14 @@ for i in [10]:
     # print ('%d label, %d : done'%(label_idx, img_idx), '%.2f'%score, '%.2fms'%time)
     print("number: ", i, "score:", score[i])
 
-# save results
-# if os.path.exists('result_artificial')==False:
-#     os.mkdir('result_artificial')
-# np.save('result_artificial/test_qurey', qurey)
-# np.save('result_artificial/test_pred', pred)
-# np.save('result_artificial/test_diff', diff)
-# np.save('result_artificial/test_score', score)
-# np.save('result_artificial/X_test', X_test)
-# np.save('result_artificial/y_test', y_test)
-# np.save('result_artificial/X_train', X_train)
-# np.save('result_artificial/y_train', y_train)
+save results
+if os.path.exists('result_artificial')==False:
+    os.mkdir('result_artificial')
+np.save('result_artificial/test_qurey', qurey)
+np.save('result_artificial/test_pred', pred)
+np.save('result_artificial/test_diff', diff)
+np.save('result_artificial/test_score', score)
+np.save('result_artificial/X_test', X_test)
+np.save('result_artificial/y_test', y_test)
+np.save('result_artificial/X_train', X_train)
+np.save('result_artificial/y_train', y_train)
