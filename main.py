@@ -4,25 +4,18 @@ import matplotlib
 
 matplotlib.use('PDF')
 
-import os
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
+
 
 import argparse
 import anogan
-# from keras.layers import Input,Dense,Activation,Subtract
-# from keras.models import Model
-# from keras import backend as K
+
 
 from tensorflow.keras.layers import Input,Dense,Activation,Subtract
 from tensorflow.keras.models import Model
 from tensorflow.keras import backend as K
 
-import pandas as pd
-from load_data import sine_data_generation, anomaly_sine_data_generation
-from sklearn.datasets import make_blobs,make_moons
-from scipy.io import loadmat
 import os
 
 
@@ -133,16 +126,16 @@ def main():
         time = (cv2.getTickCount() - start) / cv2.getTickFrequency() * 1000
         print("number: ", i, "score:", score[i])
 
-    if os.path.exists('result_artificial_classification')==False:
-        os.mkdirs('result_artificial_classification')
-    np.save('result_artificial_classification/test_qurey', qurey)
-    np.save('result_artificial_classification/test_pred', pred)
-    np.save('result_artificial_classification/test_diff', diff)
-    np.save('result_artificial_classification/test_score', score)
-    np.save('result_artificial_classification/X_test', X_test)
-    np.save('result_artificial_classification/y_test', y_test)
-    np.save('result_artificial_classification/X_train', X)
-    np.save('result_artificial_classification/y_train', y_train)
+    # if os.path.exists('result_artificial_classification')==False:
+    #     os.mkdirs('result_artificial_classification')
+    # np.save('result_artificial_classification/test_qurey', qurey)
+    # np.save('result_artificial_classification/test_pred', pred)
+    # np.save('result_artificial_classification/test_diff', diff)
+    # np.save('result_artificial_classification/test_score', score)
+    # np.save('result_artificial_classification/X_test', X_test)
+    # np.save('result_artificial_classification/y_test', y_test)
+    # np.save('result_artificial_classification/X_train', X)
+    # np.save('result_artificial_classification/y_train', y_train)
 #
 
 if __name__ == '__main__':
