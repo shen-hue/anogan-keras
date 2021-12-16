@@ -93,7 +93,7 @@ for i in [10]:
     # print ('%d label, %d : done'%(label_idx, img_idx), '%.2f'%score, '%.2fms'%time)
     print("number: ", i, "score:", score[i])
 
-save results
+# save results
 if os.path.exists('result_artificial')==False:
     os.mkdir('result_artificial')
 np.save('result_artificial/test_qurey', qurey)
