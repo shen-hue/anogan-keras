@@ -50,26 +50,27 @@ print('train shape:', X_train.shape)
 if args.mode == 'train':
     Model_d, Model_g = anogan.train(64, X_train)
 
-### 2. test generator
+# test generator
 generated_img = anogan.generate(25)
 
-
+### 2. train the f_AnoGAN
+model_d = anogan.anomaly_detector(g=None, d=None)
+ano = model_d.fit(X_test_standard, X_test_standard, epochs=100, batch_size=1)
+model_d.save_weights('result_artificial_noise/weights/artificial_encode.h5', True)
 
 
 ### 3. class anomaly detection
 
 def anomaly_detection(test_img,j, g=None, d=None):
     model = anogan.anomaly_detector(g=g, d=d)
-    ano_score = model.fit(test_img.reshape(1,-1),test_img.reshape(1,-1),epochs=500,batch_size=1)
-    ano_score = ano_score.history['loss'][-1]
-    model.save_weights('result_artificial/weights/test_1_'+str(j)+'.h5',True)
-    model.load_weights('result_artificial/weights/test_1_'+str(j)+'.h5')
+    model.load_weights('result_artificial_noise/weights/artificial_encode.h5')
     similar_img = model.predict(test_img.reshape(1,-1))
     similar_img = similar_img*(np.max(X_test)-np.min(X_test))+np.min(X_test)
 
 
     test_img = test_img*(np.max(X_test)-np.min(X_test))+np.min(X_test)
     np_residual = test_img.reshape(1,6) - similar_img.reshape(1,6)
+    ano_score = np.sum(np.abs(np_residual))
 
 
     return test_img.reshape(1,6), similar_img.reshape(1,6), np_residual, ano_score
