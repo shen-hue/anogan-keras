@@ -13,8 +13,8 @@ qurey= np.load('result_artificial/test_qurey.npy')
 pred = np.load('result_artificial/test_pred.npy')
 diff = np.load('result_artificial/test_diff.npy')
 
-lime_value = np.load('result_artificial/limevalue.npy')
-mean_shap = np.mean(np.abs(lime_value),axis=0)
+shap_value = np.load('result_artificial/shapvalue.npy')
+mean_shap = np.mean(np.abs(shap_value),axis=0)
 
 threshold = 2
 
