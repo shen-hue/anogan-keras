@@ -12,7 +12,7 @@ test_pred = np.load('result_artificial_classification/test_pred.npy').reshape(-1
 test_pred_standard = (test_pred-np.min(X_test))/(np.max(X_test)-np.min(X_test))
 rec_err = np.linalg.norm(X_test_standard-test_pred_standard, axis=1)
 
-result = np.zeros((X_test.shape[0],X_test.shape[1]))
+result = np.zeros((X_test.shape[0],X_test.shape[1],X_test.shape[1]))
 loaded_model = anomaly_score()
 loaded_model.load_weights('weights/artificial_classification_decode.h5')
 ## calcaluate SHAP value of each data point
@@ -29,6 +29,6 @@ for j in range(len(X_test_standard)):
     # X_test_label = pd.DataFrame(data=X_test_standard,columns=['feature 0','feature 1','feature 2','feature 3','feature 4','feature 5'])
     # shap.save_html('./test.html', shap.force_plot(base_value=explainer.expected_value[4].numpy(), shap_values=shap_values[4],
     #                                               features=X_test_label.iloc[idx,:],show=False))
-    result[j,:] = shap_values[0]
+    result[j,:,:] = shap_values
 
 np.save('result_artificial_classification/shapvalue', result)
