@@ -21,5 +21,5 @@ for j in range(len(X_test_standard)):
     shap_values = explainer.shap_values(X_test_standard[idx,:].reshape(-1,n))
     result.loc[j, 'shapvalue'] = shap_values
 
-result.to_csv("result_artificial/shapvalue.csv")
+np.save('result_artificial_classification/shapvalue', result)
 
