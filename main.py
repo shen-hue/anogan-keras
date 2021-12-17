@@ -85,7 +85,7 @@ score = np.zeros((n_test, 1))
 qurey = np.zeros((n_test, 6))
 pred = np.zeros((n_test, 6))
 diff = np.zeros((n_test, 6))
-for i in [10]:
+for i in m:
     test_img = X_test_standard[i]
     start = cv2.getTickCount()
     qurey[i], pred[i], diff[i], score[i] = anomaly_detection(test_img,i)
